@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#3a0606">
+    <title>Log In | Expense Runway</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Instrument+Serif&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/auth.css">
+    <script src="js/auth.js" defer></script>
+</head>
+<body>
+<main class="screen" data-view="login">
+
+
+    <svg class="bg" viewBox="0 0 402 874" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+            <filter id="soft" filterUnits="userSpaceOnUse" x="-300" y="-300" width="1000" height="1474">
+                <feGaussianBlur stdDeviation="26"/>
+            </filter>
+        </defs>
+        <path class="blob blob--a" filter="url(#soft)" stroke-width="120"
+              d="M 470 367 C 450 367 430 367 405 367 C 309.4 367 232 466.4 232 589 C 232 599 232 610 232 620"
+              data-signup="M 425 -30 C 405 90 385 145 350 175 C 300 215 230 226 140 240 C 50 255 0 290 -30 335"
+              data-signup-width="80"/>
+        <path class="blob blob--b" filter="url(#soft)" stroke-width="120"
+              d="M 470 483 C 450 483 430 483 405 483 C 298.4 483 212 565.4 212 667 C 212 681 212 695 212 710"
+              data-signup="M 450 190 C 420 240 390 274 350 290 C 290 312 220 322 140 336 C 80 345 20 355 -60 372"
+              data-signup-width="90"/>
+        <path class="blob blob--c" filter="url(#soft)" stroke-width="130"
+              d="M 470 586 C 450 586 430 586 405 586 C 313.9 586 240 677.3 240 790 C 240 813 240 837 240 860"
+              data-signup="M 460 438 C 340 440 280 486 200 478 C 120 470 40 470 40 540 C 40 610 50 700 40 770"
+              data-signup-width="130"/>
+        <path class="blob blob--d" filter="url(#soft)" stroke-width="100"
+              d="M 470 726 C 450 726 430 726 405 726 C 374.6 726 350 754.7 350 790 C 350 827 350 863 350 900"
+              data-signup="M 460 616 C 330 610 230 600 150 612 C 90 622 40 650 40 740 C 40 790 20 820 -40 830"
+              data-signup-width="120"/>
+    </svg>
+
+    <header class="brand">
+        <svg class="brand__icon" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M2 15 30 3 25 28 16.5 21 12 27 11 19 2 15Z"/>
+        </svg>
+        <span class="brand__name">Expense Runway</span>
+    </header>
+
+    <div class="stage">
+
+        <!-- LOGIN -->
+        <section class="card card--login" aria-labelledby="login-title">
+            <h1 class="title" id="login-title"><span>Welcome</span><span>Back</span></h1>
+            <form class="form" action="#" method="post">
+                <div class="field">
+                    <label for="login-email">Email</label>
+                    <input id="login-email" name="email" type="email" placeholder="you@example.com"
+                           autocomplete="email" autocapitalize="none" spellcheck="false" required>
+                </div>
+                <div class="field">
+                    <label for="login-password">Password</label>
+                    <input id="login-password" name="password" type="password" placeholder="Your password"
+                           autocomplete="current-password" required>
+                </div>
+                <p class="form__aside"><a href="#">Forgot password?</a></p>
+                <div class="actions">
+                    <button class="btn" type="submit">Log In</button>
+                    <p class="switch">New here? <a href="#signup">Sign up</a></p>
+                </div>
+            </form>
+        </section>
+
+        <!-- SIGNUP -->
+        <section class="card card--signup" aria-labelledby="signup-title">
+            <h1 class="title" id="signup-title"><span>Start your</span><span>Runway</span></h1>
+            <form class="form" action="#" method="post">
+                <div class="field">
+                    <label for="signup-name">Full Name</label>
+                    <input id="signup-name" name="name" type="text" placeholder="Your name"
+                           autocomplete="name" required>
+                </div>
+                <div class="field">
+                    <label for="signup-email">Email</label>
+                    <input id="signup-email" name="email" type="email" placeholder="you@example.com"
+                           autocomplete="email" autocapitalize="none" spellcheck="false" required>
+                </div>
+                <div class="field">
+                    <label for="signup-password">Password</label>
+                    <input id="signup-password" name="password" type="password" placeholder="At least 8 characters"
+                           autocomplete="new-password" minlength="8" required>
+                </div>
+                <div class="actions">
+                    <button class="btn" type="submit">Create Account</button>
+                    <p class="switch">Already have an account? <a href="#login">Log In</a></p>
+                </div>
+            </form>
+        </section>
+
+    </div>
+</main>
+</body>
+</html>
