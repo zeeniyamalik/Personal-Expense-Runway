@@ -10,9 +10,9 @@ Status key: [ ] not started
 - [x] `GlobalExceptionHandler.java:71` has a stray `23` after `}`. The project does not compile.
 - [x] `SecurityConfig`: allows `/login.html` and `/signup.html` (they do not exist). Allow `/`, `/*.html`, `/css/**`, `/js/**`, fonts and images. Keep `/api/**` (except `/api/auth/**`) authenticated.
 - [x] `Budget.month` is `unique = true` for the whole table. Now unique per `(user_id, budget_month)`.
-  - [ ] **You:** drop the old one-column unique index in MySQL (see section 0 report). `ddl-auto=update` does not drop it.
+  - [x] **You:** old one-column unique index on `budget` is gone (checked with `SHOW INDEX`, 2026-11-16). Only `PRIMARY` and `uk_budget_user_month` remain.
 - [x] `BudgetAlert.month` had `@JoinColumn(name = "alert_month", unique = true)`. Replaced with `@Column(name = "alert_month")`.
-  - [ ] **DB:** drop the global unique index on `budget_alert.alert_month`, and the empty `month` column the app added by mistake.
+  - [x] **DB:** `SHOW INDEX FROM budget_alert` (2026-11-16) shows only `PRIMARY` and the `user_id` foreign key index, so no global unique index. Not checked: whether an empty `month` column exists (run `SHOW COLUMNS FROM budget_alert`).
 - [ ] `YearMonth` is stored as `varbinary` (a serialized Java object), not readable text like `2026-10`. Add a JPA converter to store `VARCHAR(7)`, and migrate the existing rows (section 4, budgets).
 - [x] `DataIntegrityViolationException` handler now says "This already exists." and logs the cause. Signup gets its own email check in section 1.
 - [x] `GeminiService` key: reads `gemini.api.key`, then `GEMINI_API_KEY`, then empty. Empty key or a 4xx from Gemini now gives 503, not a crash.
@@ -22,7 +22,9 @@ Status key: [ ] not started
 
 - [ ] **Username on signup.** The signup card now has a Username field. Keep `username` required. Add a `message` to the `@Pattern` (4 to 20 characters: letters, numbers, `_` and `.`). Decide if usernames must be unique (the 409 text says they are, the column is not unique).
 - [ ] **Password rule.** Design says: 8+ characters, one number, one special character. Backend only requires a letter and a number. Change the `UserSignUpRequest.password` pattern and add a message.
-- [ ] **Signup returns a token** (or the frontend logs in right after). Pick one.
+- [ ] **Bug: `username` in responses is the email.** `User.getUsername()` returns `email` (needed by Spring Security), and `UserService.toAuthResponse` uses it, so signup returns `"username":"test1@example.com"`. Add a separate getter for the real field and use it in `UserResponse`/`toAuthResponse` (and in `/api/users/me`).
+- [ ] **Missing page gives 500.** `GET /` with no `index.html` logs `NoResourceFoundException` and returns "Something went wrong." with 500. `GlobalExceptionHandler` should answer 404 for `NoResourceFoundException`.
+- [x] **Signup returns a token.** `POST /api/auth/signup` and `/api/auth/login` both return `{token, user:{id, email, username, name}}` (`AuthResponse`).
 - [ ] `GET /api/users/me` returns `{id, email, username, name}`. Needed by Welcome and Account.
 - [ ] `PUT /api/users/me` edits name and username (Edit profile details).
 - [ ] `PUT /api/users/me/password` with `{currentPassword, newPassword}`. Change password now has a "Current password" field.

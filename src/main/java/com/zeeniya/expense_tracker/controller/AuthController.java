@@ -1,7 +1,7 @@
 package com.zeeniya.expense_tracker.controller;
 
+import com.zeeniya.expense_tracker.dto.AuthResponse;
 import com.zeeniya.expense_tracker.dto.UserLogInRequest;
-import com.zeeniya.expense_tracker.dto.UserResponse;
 import com.zeeniya.expense_tracker.dto.UserSignUpRequest;
 import com.zeeniya.expense_tracker.service.UserService;
 import jakarta.validation.Valid;
@@ -23,15 +23,15 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<UserResponse> singUp(@Valid @RequestBody UserSignUpRequest request){
-        UserResponse response = userService.signUp(request);
+    public ResponseEntity<AuthResponse> signUp(@Valid @RequestBody UserSignUpRequest request){
+        AuthResponse response = userService.signUp(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> logIn(@Valid @RequestBody UserLogInRequest request){
-        String token = userService.logIn(request);
-        return ResponseEntity.ok(token);
+    public ResponseEntity<AuthResponse> logIn(@Valid @RequestBody UserLogInRequest request){
+        AuthResponse response = userService.logIn(request);
+        return ResponseEntity.ok(response);
     }
 
 
