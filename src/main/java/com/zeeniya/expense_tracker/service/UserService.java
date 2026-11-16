@@ -1,6 +1,7 @@
 package com.zeeniya.expense_tracker.service;
 
 import com.zeeniya.expense_tracker.dto.AuthResponse;
+import com.zeeniya.expense_tracker.dto.UpdateProfileRequest;
 import com.zeeniya.expense_tracker.dto.UserLogInRequest;
 import com.zeeniya.expense_tracker.dto.UserResponse;
 import com.zeeniya.expense_tracker.dto.UserSignUpRequest;
@@ -46,9 +47,22 @@ public class UserService {
         return toAuthResponse(user);
     }
 
+    public UserResponse getProfile(User user){
+        return toUserResponse(user);
+    }
+
+    public UserResponse updateProfile(User user, UpdateProfileRequest request){
+        user.setUsername(request.getUsername());
+        user.setName(request.getName());
+        return toUserResponse(userRepository.save(user));
+    }
+
+    private UserResponse toUserResponse(User user){
+        return new UserResponse(user.getId(), user.getEmail(), user.getDisplayUsername(), user.getName());
+    }
+
     private AuthResponse toAuthResponse(User user){
-        UserResponse userResponse = new UserResponse(user.getId(), user.getEmail(), user.getDisplayUsername(), user.getName());
-        return new AuthResponse(jwtUtil.generateToken(user), userResponse);
+        return new AuthResponse(jwtUtil.generateToken(user), toUserResponse(user));
     }
 
 

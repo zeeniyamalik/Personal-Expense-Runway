@@ -12,14 +12,14 @@ public class UserSignUpRequest {
     private String email;
 
     @NotBlank(message = "Username is required")
-    @Pattern(regexp = "^[a-zA-Z0-9_.]{4,20}$")
+    @Pattern(regexp = "^[a-zA-Z0-9_.]{4,20}$", message = "Username must be 4 to 20 characters: letters, numbers, _ and .")
     private String username;
 
     @NotBlank(message = "Name is required")
     private String name;
 
     @NotBlank(message = "Password is required")
-    @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d).{8,}$")
+    @Pattern(regexp = "^(?=.*\\d)(?=.*[^a-zA-Z0-9]).{8,}$", message = "Password must be at least 8 characters with a number and a special character")
     private String password;
 
     public UserSignUpRequest(){}

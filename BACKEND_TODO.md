@@ -20,13 +20,13 @@ Status key: [ ] not started
 
 ## 1. Accounts
 
-- [ ] **Username on signup.** The signup card now has a Username field. Keep `username` required. Add a `message` to the `@Pattern` (4 to 20 characters: letters, numbers, `_` and `.`). Decide if usernames must be unique (the 409 text says they are, the column is not unique).
-- [ ] **Password rule.** Design says: 8+ characters, one number, one special character. Backend only requires a letter and a number. Change the `UserSignUpRequest.password` pattern and add a message.
+- [x] **Username on signup.** The signup card now has a Username field. Keep `username` required. Add a `message` to the `@Pattern` (4 to 20 characters: letters, numbers, `_` and `.`). Decide if usernames must be unique (the 409 text says they are, the column is not unique).
+- [x] **Password rule.** Design says: 8+ characters, one number, one special character. Backend only requires a letter and a number. Change the `UserSignUpRequest.password` pattern and add a message.
 - [x] **Bug: `username` in responses is the email.** Fixed with `User.getDisplayUsername()`. `User.getUsername()` returns `email` (needed by Spring Security), and `UserService.toAuthResponse` uses it, so signup returns `"username":"test1@example.com"`. Add a separate getter for the real field and use it in `UserResponse`/`toAuthResponse` (and in `/api/users/me`).
 - [ ] **Missing page gives 500.** `GET /` with no `index.html` logs `NoResourceFoundException` and returns "Something went wrong." with 500. `GlobalExceptionHandler` should answer 404 for `NoResourceFoundException`.
 - [x] **Signup returns a token.** `POST /api/auth/signup` and `/api/auth/login` both return `{token, user:{id, email, username, name}}` (`AuthResponse`).
-- [ ] `GET /api/users/me` returns `{id, email, username, name}`. Needed by Welcome and Account.
-- [ ] `PUT /api/users/me` edits name and username (Edit profile details).
+- [x] `GET /api/users/me` returns `{id, email, username, name}`. Needed by Welcome and Account.
+- [x] `PUT /api/users/me` edits name and username (Edit profile details).
 - [ ] `PUT /api/users/me/password` with `{currentPassword, newPassword}`. Change password now has a "Current password" field.
 - [ ] **Forgot password** (4 screens in Figma: enter email, check your email, new password, done):
   - `POST /api/auth/forgot-password` `{email}`. Always answer the same, whether or not the email exists.
