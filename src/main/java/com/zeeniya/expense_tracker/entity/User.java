@@ -64,6 +64,11 @@ public class User implements UserDetails {
         return email;
     }
 
+    @JsonIgnore
+    public String getDisplayUsername() {
+        return username;
+    }
+
     @Override
     public boolean isAccountNonExpired() {
         return UserDetails.super.isAccountNonExpired();

@@ -47,7 +47,7 @@ public class UserService {
     }
 
     private AuthResponse toAuthResponse(User user){
-        UserResponse userResponse = new UserResponse(user.getId(), user.getEmail(), user.getUsername(), user.getName());
+        UserResponse userResponse = new UserResponse(user.getId(), user.getEmail(), user.getDisplayUsername(), user.getName());
         return new AuthResponse(jwtUtil.generateToken(user), userResponse);
     }
 
