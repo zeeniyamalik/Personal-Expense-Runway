@@ -13,6 +13,7 @@ import com.zeeniya.expense_tracker.exception.DuplicateResourceException;
 import com.zeeniya.expense_tracker.repository.BudgetAlertRepository;
 import com.zeeniya.expense_tracker.repository.BudgetRepository;
 import com.zeeniya.expense_tracker.repository.ExpenseRepository;
+import com.zeeniya.expense_tracker.repository.PasswordResetTokenRepository;
 import com.zeeniya.expense_tracker.repository.UserRepository;
 import com.zeeniya.expense_tracker.security.JwtUtil;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,15 +30,17 @@ public class UserService {
     private final ExpenseRepository expenseRepository;
     private final BudgetRepository budgetRepository;
     private final BudgetAlertRepository budgetAlertRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, ExpenseRepository expenseRepository, BudgetRepository budgetRepository, BudgetAlertRepository budgetAlertRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+    public UserService(UserRepository userRepository, ExpenseRepository expenseRepository, BudgetRepository budgetRepository, BudgetAlertRepository budgetAlertRepository, PasswordResetTokenRepository passwordResetTokenRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.expenseRepository = expenseRepository;
         this.budgetRepository = budgetRepository;
         this.budgetAlertRepository = budgetAlertRepository;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
@@ -96,6 +99,7 @@ public class UserService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Password is incorrect.");
         }
+        passwordResetTokenRepository.deleteByUserId(user.getId());
         budgetAlertRepository.deleteByUserId(user.getId());
         budgetRepository.deleteByUserId(user.getId());
         expenseRepository.deleteByUserId(user.getId());

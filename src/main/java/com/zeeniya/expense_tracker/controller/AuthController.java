@@ -1,8 +1,11 @@
 package com.zeeniya.expense_tracker.controller;
 
 import com.zeeniya.expense_tracker.dto.AuthResponse;
+import com.zeeniya.expense_tracker.dto.ForgotPasswordRequest;
+import com.zeeniya.expense_tracker.dto.ResetPasswordRequest;
 import com.zeeniya.expense_tracker.dto.UserLogInRequest;
 import com.zeeniya.expense_tracker.dto.UserSignUpRequest;
+import com.zeeniya.expense_tracker.service.PasswordResetService;
 import com.zeeniya.expense_tracker.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -17,9 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final UserService userService;
+    private final PasswordResetService passwordResetService;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, PasswordResetService passwordResetService) {
         this.userService = userService;
+        this.passwordResetService = passwordResetService;
     }
 
     @PostMapping("/signup")
@@ -32,6 +37,19 @@ public class AuthController {
     public ResponseEntity<AuthResponse> logIn(@Valid @RequestBody UserLogInRequest request){
         AuthResponse response = userService.logIn(request);
         return ResponseEntity.ok(response);
+    }
+
+    // Same answer for known and unknown emails.
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request){
+        passwordResetService.requestReset(request.getEmail());
+        return ResponseEntity.ok("If an account exists for this email, a reset link has been sent.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request){
+        passwordResetService.resetPassword(request);
+        return ResponseEntity.noContent().build();
     }
 
 

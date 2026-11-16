@@ -28,7 +28,7 @@ Status key: [ ] not started
 - [x] `GET /api/users/me` returns `{id, email, username, name}`. Needed by Welcome and Account.
 - [x] `PUT /api/users/me` edits name and username (Edit profile details).
 - [x] `PUT /api/users/me/password` with `{currentPassword, newPassword}`. Change password now has a "Current password" field.
-- [ ] **Forgot password** (4 screens in Figma: enter email, check your email, new password, done):
+- [x] **Forgot password** (4 screens in Figma: enter email, check your email, new password, done). Built with a development email stub: the reset link is printed in the console (`LoggingEmailSender`), nothing is emailed. See section 7 for the real sender. The reset link opens `/reset-password.html?token=...` (base URL from `app.frontend-base-url`), so the frontend needs that page:
   - `POST /api/auth/forgot-password` `{email}`. Always answer the same, whether or not the email exists.
   - `POST /api/auth/reset-password` `{token, newPassword}`.
   - Needs a reset-token table, expiry (for example 30 minutes), one use only, and an email sender.
@@ -70,3 +70,13 @@ Status key: [ ] not started
 - [ ] Gemini model name `gemini-3.8-flash` in `GeminiService`: check it exists.
 - [ ] Missing `@Valid` or length limit on `ExpenseParseRequest.userInput` (empty or very long input).
 - [ ] `ExpenseRequest.note` has no length limit.
+
+## 7. After the backend is done (before posting the project)
+
+- [ ] **Real email sending (SMTP).** Today `LoggingEmailSender` prints reset emails in the console, so only someone who can read the server log can reset a password.
+  - Add `spring-boot-starter-mail`, write `SmtpEmailSender implements EmailSender` using `JavaMailSender`, and choose it with `app.mail.sender=smtp`.
+  - Put the SMTP host, username and password in `.env` (never committed), like `DB_PASSWORD`.
+  - Pick a sender: Gmail app password is fine for a personal project (daily limit, may land in spam); Resend, Brevo or SES are better for real use.
+  - Set `app.frontend-base-url` to the real site address.
+  - Test with a real inbox: link works, arrives (not spam), expires after 30 minutes.
+  - **If you decide not to do this:** add it to the README under a "Scope" section as a known limitation ("password reset emails are printed to the server log; no email provider is connected"). The README has no Scope section yet.
