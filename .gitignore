@@ -1,24 +1,20 @@
-<<<<<<< HEAD
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Secrets (never commit) ###
 src/main/resources/application.properties
-
 .env
 
-### STS ###
-=======
 ### IntelliJ IDEA ###
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 .kotlin
 
-### Eclipse ###
->>>>>>> ab41fd99a0ba97fa92f0201cbdb2900e800abe52
+### STS / Eclipse ###
 .apt_generated
 .classpath
 .factorypath

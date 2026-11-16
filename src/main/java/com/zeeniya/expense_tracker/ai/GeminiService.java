@@ -52,7 +52,10 @@ public class GeminiService {
               It can distort the daily average, so mention it separately from categories.
             """;
 
-    @Value("${GEMINI_API_KEY}")
+    // Reads gemini.api.key from application.properties, falls back to the GEMINI_API_KEY
+    // environment variable, and finally to empty. Empty no longer stops the app from starting:
+    // the AI features answer 503 and the rest of the app keeps working.
+    @Value("${gemini.api.key:${GEMINI_API_KEY:}}")
     private String apiKey;
 
     private final RestClient restClient;
@@ -260,6 +263,10 @@ public class GeminiService {
     // Helpers
 
     private String callGemini(Map<String, Object> requestBody) {
+        if (apiKey == null || apiKey.isBlank()) {
+            log.warn("Gemini API key is not configured");
+            throw new AiUnavailableException("AI service is not available right now. You can add this expense manually.");
+        }
         GeminiResponse response;
         try {
             response = restClient
@@ -277,6 +284,11 @@ public class GeminiService {
             // Gemini overloaded or network timeout
             log.warn("Gemini unavailable: {}", e.getMessage());
             throw new AiUnavailableException("AI service is busy right now, try again shortly, or add this expense manually.");
+        } catch (HttpClientErrorException e) {
+            // Bad key, wrong model name or a rejected request. This is our setup, not the user's
+            // input, so the user gets the same "unavailable" answer and the details go to the log.
+            log.error("Gemini rejected the request: {} {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new AiUnavailableException("AI service is not available right now. You can add this expense manually.");
         }
 
         if (response == null

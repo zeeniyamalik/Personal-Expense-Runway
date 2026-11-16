@@ -12,7 +12,10 @@ public class BudgetAlert {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JoinColumn(name = "alert_month", unique = true)
+    // The column in MySQL is "alert_month". The old @JoinColumn (meant for relations)
+    // set that name; @Column is the right annotation for a plain value and keeps the name.
+    // No "unique": that would allow only one alert per month for the whole app.
+    @Column(name = "alert_month")
     private YearMonth month;
 
     private String message;

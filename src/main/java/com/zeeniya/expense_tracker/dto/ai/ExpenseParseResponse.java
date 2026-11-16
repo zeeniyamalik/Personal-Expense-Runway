@@ -8,6 +8,9 @@ public class ExpenseParseResponse {
     private String note;
     private boolean multipleDetected;
 
+    // Jackson needs an empty constructor to build this object from Gemini's JSON.
+    public ExpenseParseResponse() {}
+
     public ExpenseParseResponse(String category, double amount, String date, String note, boolean multipleDetected) {
         this.category = category;
         this.amount = amount;

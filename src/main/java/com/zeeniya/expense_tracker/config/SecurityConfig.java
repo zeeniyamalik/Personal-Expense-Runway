@@ -54,7 +54,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/login.html", "/signup.html", "/css/**", "/js/**").permitAll()
+                // Pages and static files are public: a browser does not send the JWT when it loads a page.
+                // The data lives behind /api/**, and that stays protected.
+                // "/error" is public so real 404/500 errors are not hidden behind a 401.
+                .authorizeHttpRequests(auth -> auth.requestMatchers(
+                                "/", "/*.html", "/css/**", "/js/**", "/fonts/**", "/images/**", "/favicon.ico",
+                                "/error", "/api/auth/**").permitAll()
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
