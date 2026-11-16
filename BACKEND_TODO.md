@@ -20,7 +20,7 @@ Status key: [ ] not started
 
 ## 1. Accounts
 
-- [x] **Username on signup.** The signup card now has a Username field. Keep `username` required. Add a `message` to the `@Pattern` (4 to 20 characters: letters, numbers, `_` and `.`). Decide if usernames must be unique (the 409 text says they are, the column is not unique).
+- [x] **Username on signup.** The signup card now has a Username field. Keep `username` required. Add a `message` to the `@Pattern` (4 to 20 characters: letters, numbers, `_` and `.`). Usernames are unique (case-insensitive): `uk_users_username` plus a check in `UserService` that gives 409 "This username is already taken."
 - [x] **Password rule.** Design says: 8+ characters, one number, one special character. Backend only requires a letter and a number. Change the `UserSignUpRequest.password` pattern and add a message.
 - [x] **Bug: `username` in responses is the email.** Fixed with `User.getDisplayUsername()`. `User.getUsername()` returns `email` (needed by Spring Security), and `UserService.toAuthResponse` uses it, so signup returns `"username":"test1@example.com"`. Add a separate getter for the real field and use it in `UserResponse`/`toAuthResponse` (and in `/api/users/me`).
 - [ ] **Missing page gives 500.** `GET /` with no `index.html` logs `NoResourceFoundException` and returns "Something went wrong." with 500. `GlobalExceptionHandler` should answer 404 for `NoResourceFoundException`.

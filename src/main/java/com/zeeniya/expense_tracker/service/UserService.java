@@ -7,6 +7,7 @@ import com.zeeniya.expense_tracker.dto.UserResponse;
 import com.zeeniya.expense_tracker.dto.UserSignUpRequest;
 import com.zeeniya.expense_tracker.entity.User;
 import com.zeeniya.expense_tracker.entity.Role;
+import com.zeeniya.expense_tracker.exception.DuplicateResourceException;
 import com.zeeniya.expense_tracker.repository.UserRepository;
 import com.zeeniya.expense_tracker.security.JwtUtil;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,6 +32,13 @@ public class UserService {
     }
 
     public AuthResponse signUp(UserSignUpRequest request){
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException("An account with this email already exists.");
+        }
+        if (userRepository.existsByUsernameIgnoreCase(request.getUsername())) {
+            throw new DuplicateResourceException("This username is already taken.");
+        }
+
         String password = passwordEncoder.encode(request.getPassword());
 
         User user = new User(request.getEmail(), request.getUsername(), request.getName(), password, Role.USER);
@@ -52,6 +60,9 @@ public class UserService {
     }
 
     public UserResponse updateProfile(User user, UpdateProfileRequest request){
+        if (userRepository.existsByUsernameIgnoreCaseAndIdNot(request.getUsername(), user.getId())) {
+            throw new DuplicateResourceException("This username is already taken.");
+        }
         user.setUsername(request.getUsername());
         user.setName(request.getName());
         return toUserResponse(userRepository.save(user));
