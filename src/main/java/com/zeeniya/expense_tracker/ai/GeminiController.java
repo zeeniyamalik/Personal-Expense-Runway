@@ -2,6 +2,7 @@ package com.zeeniya.expense_tracker.ai;
 
 import com.zeeniya.expense_tracker.dto.ExpenseResponse;
 import com.zeeniya.expense_tracker.dto.ai.ExpenseParseRequest;
+import com.zeeniya.expense_tracker.dto.ai.ExpenseParseResponse;
 import com.zeeniya.expense_tracker.dto.ai.InsightResponse;
 import com.zeeniya.expense_tracker.entity.User;
 
@@ -23,6 +24,12 @@ public class GeminiController {
             @AuthenticationPrincipal User currentUser) {
 
         return ExpenseResponse.from(geminiService.parseAndSaveExpense(request.getUserInput(), currentUser));
+    }
+
+    // Same parsing as /parse, but nothing is saved.
+    @PostMapping("/api/expenses/parse/preview")
+    public ExpenseParseResponse previewParse(@RequestBody ExpenseParseRequest request) {
+        return geminiService.previewExpense(request.getUserInput());
     }
 
     @GetMapping("/api/ai/insights")

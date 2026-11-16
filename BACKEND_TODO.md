@@ -36,7 +36,9 @@ Status key: [ ] not started
 
 ## 2. Expenses
 
-- [ ] **Preview parse.** `POST /api/expenses/parse/preview` `{userInput}` returns `ExpenseParseResponse` and saves nothing. The Review screen then saves with `POST /api/expenses`. Keep the old `/parse` or remove it.
+- [x] **Preview parse.** `POST /api/expenses/parse/preview` `{userInput}` returns `ExpenseParseResponse` and saves nothing. The Review screen then saves with `POST /api/expenses`. The old `/parse` is kept (it saves directly), and both use the same checks (`GeminiService.previewExpense`).
+  - [ ] **You:** not yet checked against a real Gemini answer. On 2026-11-16 Google returned 503 "high demand" for every call, so only the unit tests (`GeminiServiceTest`) and the 503 path were verified. Try it once from the frontend or curl when Gemini is back.
+- [x] **Gemini timeouts.** `RestClientConfig` had no timeouts, so a stalled call hung forever. Now 5 s to connect and 20 s to read, and any read failure gives 503 (`RestClientException` catch in `GeminiService.callGemini`).
 - [ ] **Categories.** Figma list: Food, Travel, Entertainment, Shopping, Medical, Utilities, Other. Change the Gemini prompt list to match. Decision: if the AI returns a name outside the list, map it to the closest listed category, and use Other if nothing fits. Do this on the server so the AI cannot create new categories.
 - [ ] **History search and filters.** `GET /api/expenses?search=&category=&month=YYYY-MM&from=&to=` with sorting (newest first) and paging (`page`, `size`). Search matches note, category and date.
 - [ ] `GET /api/expenses/summary/category?month=YYYY-MM` (the Analysis month picker and "Food leads" on Home need a month).

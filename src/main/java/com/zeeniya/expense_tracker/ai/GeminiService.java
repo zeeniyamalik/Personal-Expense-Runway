@@ -16,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import tools.jackson.databind.ObjectMapper;
 
 import org.slf4j.Logger;
@@ -289,6 +290,11 @@ public class GeminiService {
             // input, so the user gets the same "unavailable" answer and the details go to the log.
             log.error("Gemini rejected the request: {} {}", e.getStatusCode(), e.getResponseBodyAsString());
             throw new AiUnavailableException("AI service is not available right now. You can add this expense manually.");
+        } catch (RestClientException e) {
+            // Anything else that goes wrong while reading the answer, for example a timeout
+            // after the response has started.
+            log.warn("Gemini response could not be read: {}", e.getMessage());
+            throw new AiUnavailableException("AI service is busy right now, try again shortly, or add this expense manually.");
         }
 
         if (response == null
@@ -311,7 +317,9 @@ public class GeminiService {
         return response;
     }
 
-    public Expense parseAndSaveExpense(String userInput, User currentUser) {
+    // Parses the text and runs the checks, but saves nothing. The Review screen shows this
+    // result, and the user saves it afterwards with POST /api/expenses.
+    public ExpenseParseResponse previewExpense(String userInput) {
         ExpenseParseResponse parsed = parseExpense(userInput);
 
         if (parsed.isMultipleDetected()) {
@@ -323,6 +331,12 @@ public class GeminiService {
         if (parsed.getAmount() <= 0) {
             throw new IllegalArgumentException("Could not detect a valid amount from your input.");
         }
+
+        return parsed;
+    }
+
+    public Expense parseAndSaveExpense(String userInput, User currentUser) {
+        ExpenseParseResponse parsed = previewExpense(userInput);
 
         ExpenseRequest request = new ExpenseRequest(
                 parsed.getCategory(),
