@@ -11,5 +11,6 @@ import java.util.Optional;
 public interface BudgetRepository extends JpaRepository<Budget, Long> {
     Optional<Budget> findByMonthAndUserId(YearMonth month, Long userId);
     List<Budget> findByUserId(Long userId);
+    void deleteByUserId(Long userId);
     List<Budget> findByMonth(YearMonth month); //used in Burn Rate - Expense Service method
 }

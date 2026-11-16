@@ -9,5 +9,6 @@ import java.util.Optional;
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     List<Expense> findByUserId(Long userId);
     Optional<Expense> findByIdAndUserId(Long id, Long userId);
+    void deleteByUserId(Long userId);
 }
 

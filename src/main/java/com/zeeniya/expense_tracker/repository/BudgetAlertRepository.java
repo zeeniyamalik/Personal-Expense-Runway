@@ -11,5 +11,6 @@ public interface BudgetAlertRepository extends JpaRepository<BudgetAlert, Long> 
     Optional<BudgetAlert> findByMonth(YearMonth month);
     Optional<BudgetAlert> findByMonthAndUserId(YearMonth month, Long userId);
     Optional<BudgetAlert> findByIdAndUserId(Long id, Long userId);
+    void deleteByUserId(Long userId);
     List<BudgetAlert> findByMonthAndDismissedFalseAndUserId(YearMonth month, Long userId);
 }

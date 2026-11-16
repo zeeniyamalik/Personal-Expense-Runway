@@ -1,6 +1,8 @@
 package com.zeeniya.expense_tracker.service;
 
 import com.zeeniya.expense_tracker.dto.AuthResponse;
+import com.zeeniya.expense_tracker.dto.ChangePasswordRequest;
+import com.zeeniya.expense_tracker.dto.DeleteAccountRequest;
 import com.zeeniya.expense_tracker.dto.UpdateProfileRequest;
 import com.zeeniya.expense_tracker.dto.UserLogInRequest;
 import com.zeeniya.expense_tracker.dto.UserResponse;
@@ -8,6 +10,9 @@ import com.zeeniya.expense_tracker.dto.UserSignUpRequest;
 import com.zeeniya.expense_tracker.entity.User;
 import com.zeeniya.expense_tracker.entity.Role;
 import com.zeeniya.expense_tracker.exception.DuplicateResourceException;
+import com.zeeniya.expense_tracker.repository.BudgetAlertRepository;
+import com.zeeniya.expense_tracker.repository.BudgetRepository;
+import com.zeeniya.expense_tracker.repository.ExpenseRepository;
 import com.zeeniya.expense_tracker.repository.UserRepository;
 import com.zeeniya.expense_tracker.security.JwtUtil;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,17 +20,24 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final ExpenseRepository expenseRepository;
+    private final BudgetRepository budgetRepository;
+    private final BudgetAlertRepository budgetAlertRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+    public UserService(UserRepository userRepository, ExpenseRepository expenseRepository, BudgetRepository budgetRepository, BudgetAlertRepository budgetAlertRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
+        this.expenseRepository = expenseRepository;
+        this.budgetRepository = budgetRepository;
+        this.budgetAlertRepository = budgetAlertRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
@@ -66,6 +78,28 @@ public class UserService {
         user.setUsername(request.getUsername());
         user.setName(request.getName());
         return toUserResponse(userRepository.save(user));
+    }
+
+    public void changePassword(User user, ChangePasswordRequest request){
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect.");
+        }
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("New password must be different from the current one.");
+        }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteAccount(User user, DeleteAccountRequest request){
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Password is incorrect.");
+        }
+        budgetAlertRepository.deleteByUserId(user.getId());
+        budgetRepository.deleteByUserId(user.getId());
+        expenseRepository.deleteByUserId(user.getId());
+        userRepository.deleteById(user.getId());
     }
 
     private UserResponse toUserResponse(User user){
