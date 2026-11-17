@@ -6,11 +6,16 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class ExpenseRequest {
+    // 1 crore, for expenses and budgets
+    public static final String MAX_AMOUNT = "10000000";
+    public static final String MAX_AMOUNT_MESSAGE = "Amount can't be more than Rs. 10,000,000 (1 crore).";
+
     @NotBlank(message = "Category is required")
     private String category;
 
     @NotNull(message = "Amount is required")
     @Positive(message = "Amount must be greater than 0")
+    @DecimalMax(value = MAX_AMOUNT, message = MAX_AMOUNT_MESSAGE)
     private BigDecimal amount;
 
     @NotNull(message = "Date is required")

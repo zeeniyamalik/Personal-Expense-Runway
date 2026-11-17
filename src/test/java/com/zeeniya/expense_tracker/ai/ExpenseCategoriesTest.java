@@ -31,4 +31,13 @@ class ExpenseCategoriesTest {
         assertThat(ExpenseCategories.toListed("")).isEqualTo("Other");
         assertThat(ExpenseCategories.toListed(null)).isEqualTo("Other");
     }
+
+    @Test
+    void isChanged_onlyWhenADifferentCategoryWasPicked() {
+        assertThat(ExpenseCategories.isChanged("Food")).isFalse();
+        assertThat(ExpenseCategories.isChanged("food")).isFalse();
+        assertThat(ExpenseCategories.isChanged("Bills")).isTrue();
+        assertThat(ExpenseCategories.isChanged("Education")).isTrue();
+        assertThat(ExpenseCategories.isChanged(null)).isTrue();
+    }
 }

@@ -77,6 +77,12 @@ Status key: [ ] not started
 - [x] `ExpenseParseRequest.userInput`: required, max 300 characters, checked before Gemini is called (`@Valid` on `/parse` and `/parse/preview`).
 - [x] `ExpenseRequest.note`: max 255 characters (the database column size). Before, a longer note failed with a database error.
 
+## 6b. Found when checking FIGMA_DESIGN_GAPS (2026-11-18)
+
+- [x] Preview parse answer has `categoryChanged` (true when the AI's category was replaced by a listed one), for the "We filed this under ..." note (gap A8).
+- [x] Maximum amount 1 crore (Rs. 10,000,000) for expenses, budgets and AI-parsed amounts (gap B24).
+- [x] Decided: expense search box filters in the browser, no backend text search. No Undo for dismissed alerts.
+
 ## 7. After the backend is done (before posting the project)
 
 - [x] **Real email sending (SMTP), code done.** `SmtpEmailSender` (Spring `JavaMailSender`), chosen with `MAIL_SENDER=smtp` in `.env`; without it the app keeps printing emails in the console. Settings come from `.env`: `MAIL_HOST` (default smtp.gmail.com), `MAIL_PORT` (587), `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM` (defaults to the username), `APP_BASE_URL` for the link (default http://localhost:8080). A failed send is logged, not shown to the user, so the answer never reveals which emails have accounts. Checked: the app connects to Gmail and logs "Authentication failed" with a fake password.

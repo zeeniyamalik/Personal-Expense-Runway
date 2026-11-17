@@ -8,6 +8,9 @@ public class ExpenseParseResponse {
     private String note;
     private boolean multipleDetected;
 
+    // set by the server, not the AI: the Review screen shows "We filed this under <category>."
+    private boolean categoryChanged;
+
     // Jackson needs an empty constructor to build this object from Gemini's JSON.
     public ExpenseParseResponse() {}
 
@@ -57,6 +60,14 @@ public class ExpenseParseResponse {
 
     public void setMultipleDetected(boolean multipleDetected) {
         this.multipleDetected = multipleDetected;
+    }
+
+    public boolean isCategoryChanged() {
+        return categoryChanged;
+    }
+
+    public void setCategoryChanged(boolean categoryChanged) {
+        this.categoryChanged = categoryChanged;
     }
 
 }

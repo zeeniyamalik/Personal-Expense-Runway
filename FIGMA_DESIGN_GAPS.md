@@ -13,7 +13,7 @@ Backend items for each are in BACKEND_TODO.md.
 5. **Home [2:15]**: "1 new notice to review" must be its own tap target (now it sits inside Quick actions).
 6. **Alerts [2:302]**: add a small dismiss (x) on each alert card. Show "Last checked" as a time.
 7. **Manual expense (service unavailable) [2:82]**: make it the same as the normal Manual frame, with the "Service unavailable" note as a banner on top.
-8. **Review expense [2:59]**: add a one-line note for when the AI picked a category that was mapped to another ("We filed this under Other.").
+8. **Review expense [2:59]**: add a one-line note for when the AI picked a category that was mapped to another ("We filed this under Other."). Shown when the preview answer has `categoryChanged: true`; the text uses the category it was filed under.
 9. **Edit your budget [35:283]**: add a back arrow and a Cancel link.
 10. **Account [2:320]**: add Delete account (red text link, below Log out).
 
@@ -40,7 +40,7 @@ Backend items for each are in BACKEND_TODO.md.
 12. Add expense, empty input error.
 13. Expense history, empty (no expenses): one line + "Add expense" button.
 14. Expense history, no matches for the search or filter: one line + "Clear filters" button.
-15. Expense history, search active (keyboard open, results list).
+15. Expense history, search active (keyboard open, results list). Search runs in the browser over the loaded list (note, category, date); the backend only filters by category and dates.
 16. Month picker sheet (used by History and Analysis).
 17. Category filter sheet (the existing dropdown, with "All categories" on top).
 18. Expense not found (opened a deleted expense): "This expense no longer exists." + Back to history.
@@ -51,7 +51,7 @@ Backend items for each are in BACKEND_TODO.md.
 21. Monthly budget, no budget set (empty state): one line + "Set budget".
 22. Next month already has a budget: same screen as Set next month, prefilled, button "Save changes".
 23. Budget history, empty: "No past budgets yet."
-24. Budget amount errors: empty, zero, too large.
+24. Budget amount errors: empty, zero, too large ("Amount can't be more than Rs. 10,000,000 (1 crore)."). The same limit applies to a single expense.
 
 **Analysis and insights**
 25. Spending analysis, no spending (empty): one line + "Add expense".
@@ -60,7 +60,7 @@ Backend items for each are in BACKEND_TODO.md.
 28. Your insights with no tips: show only the summary.
 
 **Alerts**
-29. Alert dismissed (card collapses, short "Dismissed" with Undo is optional).
+29. Alert dismissed (card collapses). No Undo (decided 2026-11-18).
 30. Alerts, over-budget card (the existing frame only shows the unusual-expense card). Button: Review budget.
 
 **System**
@@ -79,7 +79,7 @@ Backend items for each are in BACKEND_TODO.md.
 | Budget exceeded: Review spending | Spending analysis |
 | Your insights: Refresh insights | Finding insights |
 | Finding insights | Your insights, or Insights unavailable |
-| Alerts: View expense | Expense history (current month) |
+| Alerts: View expense | Expense details of that expense (alerts carry `expenseId`) |
 | Alerts: dismiss | Alert dismissed |
 | Login: Forgot password? | Forgot password |
 | Expense history: every row | Expense details |
@@ -97,5 +97,20 @@ Backend items for each are in BACKEND_TODO.md.
 - Signup goes straight to Welcome. "Set account" and "Set password" frames stay unused.
 - AI category outside the Figma list: map it to the closest listed category, else "Other" (done on the server).
 - Forecast stays a 3-month table.
-- Search expenses: by date or category (and note).
+- Search expenses: the search box filters the loaded list in the browser (note, category, date). The backend filters only by category and date range (decided 2026-11-17/18).
+- Alerts: dismiss has no Undo.
+- Amounts: 1 crore (Rs. 10,000,000) maximum for budgets and single expenses.
 - Home states: No expenses yet, Watch your pace, Budget exceeded, and the new no-budget state.
+
+## E. Built in code so far
+
+The Figma work (sections A to C) is still to do; this tracks what the app already has.
+
+| Item | Status |
+|---|---|
+| A1 Username field with hint (signup) | built (auth.html) |
+| A2 Password checklist | built for signup and set new password; change password comes with Account |
+| A4 Login error line and "Session ended" banner | built |
+| B1 to B5 Forgot password flow | built, tested with a real email |
+| B32 Session expired | built |
+| Everything else | backend ready, screens not built yet |

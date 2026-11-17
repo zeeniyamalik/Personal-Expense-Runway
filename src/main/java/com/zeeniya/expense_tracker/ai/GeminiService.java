@@ -147,6 +147,7 @@ public class GeminiService {
         }
 
         // The AI may still answer with a name outside the list, so map it here.
+        parsed.setCategoryChanged(ExpenseCategories.isChanged(parsed.getCategory()));
         parsed.setCategory(ExpenseCategories.toListed(parsed.getCategory()));
         return parsed;
     }
@@ -341,6 +342,10 @@ public class GeminiService {
 
         if (parsed.getAmount() <= 0) {
             throw new IllegalArgumentException("Could not detect a valid amount from your input.");
+        }
+
+        if (BigDecimal.valueOf(parsed.getAmount()).compareTo(new BigDecimal(ExpenseRequest.MAX_AMOUNT)) > 0) {
+            throw new IllegalArgumentException(ExpenseRequest.MAX_AMOUNT_MESSAGE);
         }
 
         return parsed;

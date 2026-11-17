@@ -72,6 +72,16 @@ class GeminiServiceTest {
     }
 
     @Test
+    void previewRejectsAnAmountAbove1Crore() {
+        doReturn(new ExpenseParseResponse("Shopping", 20_000_000, "2026-11-15", null, false))
+                .when(geminiService).parseExpense("car 2 crore");
+
+        assertThatThrownBy(() -> geminiService.previewExpense("car 2 crore"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("1 crore");
+    }
+
+    @Test
     void insightsWithoutExpenses_explainWhatIsMissing_withoutCallingGemini() {
         User user = new User("user@example.com", "user", "Test User", "password", Role.USER);
         when(expenseService.getCategorySummary(user, null)).thenReturn(List.of());

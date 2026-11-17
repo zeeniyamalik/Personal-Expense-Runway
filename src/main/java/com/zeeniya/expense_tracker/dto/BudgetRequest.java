@@ -10,6 +10,7 @@ public class BudgetRequest {
 
     @NotNull(message = "Amount is required" )
     @Positive(message = "Amount must be greater than 0")
+    @DecimalMax(value = ExpenseRequest.MAX_AMOUNT, message = ExpenseRequest.MAX_AMOUNT_MESSAGE)
     private BigDecimal amount;
 
     public BudgetRequest() {}

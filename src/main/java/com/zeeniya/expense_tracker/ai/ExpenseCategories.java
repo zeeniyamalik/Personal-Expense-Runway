@@ -4,8 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-// The fixed category list from the Figma design. The AI is asked to use it, and whatever it
-// answers goes through toListed(), so a new category can never reach the database from the AI.
+// a new category can never reach the database from the AI.
 public final class ExpenseCategories {
 
     public static final String OTHER = "Other";
@@ -55,6 +54,14 @@ public final class ExpenseCategories {
     }
 
     private ExpenseCategories() {
+    }
+
+    // true when toListed() had to pick a different category (case differences don't count)
+    public static boolean isChanged(String category) {
+        if (category == null || category.isBlank()) {
+            return true;
+        }
+        return !toListed(category).equalsIgnoreCase(category.trim());
     }
 
     // Returns the listed name for any text: an exact match (ignoring case), then a keyword
