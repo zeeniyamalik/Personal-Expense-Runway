@@ -28,7 +28,7 @@ Status key: [ ] not started
 - [x] `GET /api/users/me` returns `{id, email, username, name}`. Needed by Welcome and Account.
 - [x] `PUT /api/users/me` edits name and username (Edit profile details).
 - [x] `PUT /api/users/me/password` with `{currentPassword, newPassword}`. Change password now has a "Current password" field.
-- [x] **Forgot password** (4 screens in Figma: enter email, check your email, new password, done). Built with a development email stub: the reset link is printed in the console (`LoggingEmailSender`), nothing is emailed. See section 7 for the real sender. The reset link opens `/reset-password.html?token=...` (base URL from `app.frontend-base-url`), so the frontend needs that page:
+- [x] **Forgot password** (4 screens in Figma: enter email, check your email, new password, done). Built with a development email stub: the reset link is printed in the console (`LoggingEmailSender`), nothing is emailed. See section 7 for the real sender. The reset link opens `/auth.html?reset=...` (base URL from `app.frontend-base-url`); the auth page handles it (changed 2026-11-17 with the frontend):
   - `POST /api/auth/forgot-password` `{email}`. Always answer the same, whether or not the email exists.
   - `POST /api/auth/reset-password` `{token, newPassword}`.
   - Needs a reset-token table, expiry (for example 30 minutes), one use only, and an email sender.
@@ -80,5 +80,5 @@ Status key: [ ] not started
 ## 7. After the backend is done (before posting the project)
 
 - [x] **Real email sending (SMTP), code done.** `SmtpEmailSender` (Spring `JavaMailSender`), chosen with `MAIL_SENDER=smtp` in `.env`; without it the app keeps printing emails in the console. Settings come from `.env`: `MAIL_HOST` (default smtp.gmail.com), `MAIL_PORT` (587), `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM` (defaults to the username), `APP_BASE_URL` for the link (default http://localhost:8080). A failed send is logged, not shown to the user, so the answer never reveals which emails have accounts. Checked: the app connects to Gmail and logs "Authentication failed" with a fake password.
-  - [x] Real Gmail account set in `.env` and tested on 2026-11-17: the reset email arrived. The link page (`reset-password.html`) is part of the frontend; test the full reset once it exists.
+  - [x] Real Gmail account set in `.env` and tested on 2026-11-17: the reset email arrived. Full reset flow tested in the browser on 2026-11-17 (console email): link opens Set new password, new password works, a used link shows Link expired.
   - [ ] **You, when the site is online:** follow `public_launch.md` (set `APP_BASE_URL` and the other server values).

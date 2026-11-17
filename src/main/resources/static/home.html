@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#3a0606">
+    <title>Home | Expense Runway</title>
+    <!-- stand-in until the real home screen is built -->
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Instrument+Serif&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/auth.css">
+    <script src="js/api.js"></script>
+    <script>requireLogin();</script>
+</head>
+<body>
+<main class="screen">
+    <header class="brand">
+        <svg class="brand__icon" viewBox="0 0 32 32" aria-hidden="true">
+            <path d="M2 15 30 3 25 28 16.5 21 12 27 11 19 2 15Z"/>
+        </svg>
+        <span class="brand__name">Expense Runway</span>
+    </header>
+
+    <div class="stage">
+        <section class="card card--small is-active" aria-labelledby="home-title">
+            <h1 class="title" id="home-title"><span>Hello</span><span id="home-name"></span></h1>
+            <div class="form">
+                <p class="card__text">You're logged in as <strong id="home-email"></strong>. The home screen comes next.</p>
+                <div class="actions">
+                    <button class="btn" type="button" id="logout">Log out</button>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+<script>
+    // first name only, so it fits the big heading
+    function showUser(user) {
+        document.getElementById('home-name').textContent = (user.name || '').split(' ')[0];
+        document.getElementById('home-email').textContent = user.email;
+    }
+
+    const saved = getUser();
+    if (saved) showUser(saved);
+    // also checks that the saved token still works (a 401 goes back to login)
+    api('/users/me').then(showUser).catch(() => {});
+
+    document.getElementById('logout').addEventListener('click', () => {
+        clearSession();
+        location.replace('auth.html');
+    });
+</script>
+</body>
+</html>

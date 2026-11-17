@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Instrument+Serif&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/auth.css">
+    <script src="js/api.js" defer></script>
     <script src="js/auth.js" defer></script>
 </head>
 <body>
@@ -47,54 +48,161 @@
         <span class="brand__name">Expense Runway</span>
     </header>
 
+    <p class="banner" id="session-banner" role="status" hidden>Session ended, please log in again.</p>
+
     <div class="stage">
 
         <!-- LOGIN -->
-        <section class="card card--login" aria-labelledby="login-title">
+        <section class="card card--login" data-card="login" aria-labelledby="login-title">
             <h1 class="title" id="login-title"><span>Welcome</span><span>Back</span></h1>
-            <form class="form" action="#" method="post">
+            <form class="form" id="login-form" novalidate>
                 <div class="field">
                     <label for="login-email">Email</label>
                     <input id="login-email" name="email" type="email" placeholder="you@example.com"
-                           autocomplete="email" autocapitalize="none" spellcheck="false" required>
+                           autocomplete="email" autocapitalize="none" spellcheck="false"
+                           aria-describedby="login-email-error">
+                    <p class="field__error" id="login-email-error" data-error-for="email"></p>
                 </div>
                 <div class="field">
                     <label for="login-password">Password</label>
                     <input id="login-password" name="password" type="password" placeholder="Your password"
-                           autocomplete="current-password" required>
+                           autocomplete="current-password" aria-describedby="login-password-error login-form-error">
+                    <p class="field__error" id="login-password-error" data-error-for="password"></p>
+                    <p class="form__error" id="login-form-error" role="alert"></p>
                 </div>
-                <p class="form__aside"><a href="#">Forgot password?</a></p>
+                <p class="form__aside"><a href="#forgot">Forgot password?</a></p>
                 <div class="actions">
-                    <button class="btn" type="submit">Log In</button>
+                    <button class="btn" type="submit" data-busy="Logging in…">Log In</button>
                     <p class="switch">New here? <a href="#signup">Sign up</a></p>
                 </div>
             </form>
         </section>
 
         <!-- SIGNUP -->
-        <section class="card card--signup" aria-labelledby="signup-title">
+        <section class="card card--signup" data-card="signup" aria-labelledby="signup-title">
             <h1 class="title" id="signup-title"><span>Start your</span><span>Runway</span></h1>
-            <form class="form" action="#" method="post">
+            <form class="form" id="signup-form" novalidate>
                 <div class="field">
                     <label for="signup-name">Full Name</label>
                     <input id="signup-name" name="name" type="text" placeholder="Your name"
-                           autocomplete="name" required>
+                           autocomplete="name" aria-describedby="signup-name-error">
+                    <p class="field__error" id="signup-name-error" data-error-for="name"></p>
+                </div>
+                <div class="field">
+                    <label for="signup-username">Username</label>
+                    <input id="signup-username" name="username" type="text" placeholder="e.g. zee_runs"
+                           autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="20"
+                           aria-describedby="signup-username-hint signup-username-error">
+                    <p class="field__hint" id="signup-username-hint">4 to 20 characters. Letters, numbers, _ and .</p>
+                    <p class="field__error" id="signup-username-error" data-error-for="username"></p>
                 </div>
                 <div class="field">
                     <label for="signup-email">Email</label>
                     <input id="signup-email" name="email" type="email" placeholder="you@example.com"
-                           autocomplete="email" autocapitalize="none" spellcheck="false" required>
+                           autocomplete="email" autocapitalize="none" spellcheck="false"
+                           aria-describedby="signup-email-error">
+                    <p class="field__error" id="signup-email-error" data-error-for="email"></p>
                 </div>
                 <div class="field">
                     <label for="signup-password">Password</label>
                     <input id="signup-password" name="password" type="password" placeholder="At least 8 characters"
-                           autocomplete="new-password" minlength="8" required>
+                           autocomplete="new-password" aria-describedby="signup-rules signup-password-error">
+                    <ul class="checklist" id="signup-rules" data-rules-for="signup-password">
+                        <li data-rule="length">8+ characters</li>
+                        <li data-rule="number">A number</li>
+                        <li data-rule="special">A special character</li>
+                    </ul>
+                    <p class="field__error" id="signup-password-error" data-error-for="password"></p>
                 </div>
+                <p class="form__error" role="alert"></p>
                 <div class="actions">
-                    <button class="btn" type="submit">Create Account</button>
+                    <button class="btn" type="submit" data-busy="Creating…">Create Account</button>
                     <p class="switch">Already have an account? <a href="#login">Log In</a></p>
                 </div>
             </form>
+        </section>
+
+        <!-- FORGOT PASSWORD -->
+        <section class="card card--small" data-card="forgot" aria-labelledby="forgot-title">
+            <h1 class="title title--long" id="forgot-title"><span>Forgot</span><span>Password</span></h1>
+            <form class="form" id="forgot-form" novalidate>
+                <p class="card__text">Enter the email you signed up with and we'll send you a link to choose a new password.</p>
+                <div class="field">
+                    <label for="forgot-email">Email</label>
+                    <input id="forgot-email" name="email" type="email" placeholder="you@example.com"
+                           autocomplete="email" autocapitalize="none" spellcheck="false"
+                           aria-describedby="forgot-email-error">
+                    <p class="field__error" id="forgot-email-error" data-error-for="email"></p>
+                </div>
+                <p class="form__error" role="alert"></p>
+                <div class="actions">
+                    <button class="btn" type="submit" data-busy="Sending…">Send reset link</button>
+                    <p class="switch"><a href="#login">Back to log in</a></p>
+                </div>
+            </form>
+        </section>
+
+        <!-- CHECK YOUR EMAIL -->
+        <section class="card card--small" data-card="sent" aria-labelledby="sent-title">
+            <h1 class="title" id="sent-title"><span>Check your</span><span>Email</span></h1>
+            <div class="form">
+                <p class="card__text">If an account exists for <strong id="sent-email">that address</strong>, we sent a link to reset your password. It works once and expires in 30 minutes.</p>
+                <p class="card__text card__text--muted">Nothing there? Check your spam folder.</p>
+                <div class="actions">
+                    <a class="btn" href="#login">Back to log in</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- SET NEW PASSWORD (opened from the email link) -->
+        <section class="card card--small" data-card="reset" aria-labelledby="reset-title">
+            <h1 class="title title--long" id="reset-title"><span>New</span><span>Password</span></h1>
+            <form class="form" id="reset-form" novalidate>
+                <div class="field">
+                    <label for="reset-password">New password</label>
+                    <input id="reset-password" name="newPassword" type="password" placeholder="At least 8 characters"
+                           autocomplete="new-password" aria-describedby="reset-rules reset-password-error">
+                    <ul class="checklist" id="reset-rules" data-rules-for="reset-password">
+                        <li data-rule="length">8+ characters</li>
+                        <li data-rule="number">A number</li>
+                        <li data-rule="special">A special character</li>
+                    </ul>
+                    <p class="field__error" id="reset-password-error" data-error-for="newPassword"></p>
+                </div>
+                <div class="field">
+                    <label for="reset-confirm">Confirm password</label>
+                    <input id="reset-confirm" name="confirm" type="password" placeholder="Type it again"
+                           autocomplete="new-password" aria-describedby="reset-confirm-error">
+                    <p class="field__error" id="reset-confirm-error" data-error-for="confirm"></p>
+                </div>
+                <p class="form__error" role="alert"></p>
+                <div class="actions">
+                    <button class="btn" type="submit" data-busy="Saving…">Save password</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- PASSWORD UPDATED -->
+        <section class="card card--small" data-card="done" aria-labelledby="done-title">
+            <h1 class="title" id="done-title"><span>All</span><span>Set</span></h1>
+            <div class="form">
+                <p class="card__text">Your password has been updated. Log in with your new password.</p>
+                <div class="actions">
+                    <a class="btn" href="#login">Log In</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- LINK EXPIRED OR USED -->
+        <section class="card card--small" data-card="expired" aria-labelledby="expired-title">
+            <h1 class="title title--long" id="expired-title"><span>Link</span><span>Expired</span></h1>
+            <div class="form">
+                <p class="card__text">This reset link has expired or was already used. Links work once and only for 30 minutes.</p>
+                <div class="actions">
+                    <a class="btn" href="#forgot">Request a new link</a>
+                    <p class="switch"><a href="#login">Back to log in</a></p>
+                </div>
+            </div>
         </section>
 
     </div>

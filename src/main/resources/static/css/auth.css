@@ -1,6 +1,6 @@
 /* =========================================================
-   Expense Runway: login and signup
-   Shared by login.html and signup.html
+   Expense Runway: login, signup and password reset
+   Used by auth.html (and home.html for now)
    ========================================================= */
 
 /* ---------- 1. Design tokens ---------- */
@@ -121,6 +121,7 @@ body {
 /* Per page spacing, tuned to match the Figma frames */
 .card--login  { --card-gap: 4.4rem; --card-pad-bottom: 3.3rem; --title-gap: 5.2rem; --field-gap: 1.7rem; --actions-gap: 2.9rem; }
 .card--signup { --card-gap: 3rem;   --card-pad-bottom: 3.4rem; --title-gap: 3.8rem; --field-gap: 1rem;   --actions-gap: 4rem; }
+.card--small  { --card-gap: 4.4rem; --card-pad-bottom: 3rem;   --title-gap: 3rem;   --field-gap: 1.4rem; --actions-gap: 2.2rem; }
 
 /* ---------- 7. Heading ---------- */
 .title {
@@ -135,6 +136,8 @@ body {
 .title span { display: block; }
 .title span:first-child { font-size: 16cqw; }   /* WELCOME / START YOUR */
 .title span:last-child  { font-size: 20.8cqw; } /* BACK / RUNWAY */
+.title--long span:first-child { font-size: 13cqw; } /* long last word: both lines shrink */
+.title--long span:last-child  { font-size: 17cqw; } /* PASSWORD / EXPIRED */
 
 /* ---------- 8. Form ---------- */
 .form {
@@ -177,6 +180,45 @@ body {
   background: rgba(22, 2, 16, 0.78);
 }
 
+.field input[aria-invalid="true"] { border-color: #ffb3c7; }
+
+.field__hint,
+.field__error,
+.form__error {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+.field__hint { color: rgba(255, 255, 255, 0.7); }
+.field__error,
+.form__error { color: #ffc2d4; }
+.field__error:empty,
+.form__error:empty { display: none; }
+
+/* live password rules: each line turns on when it is met */
+.checklist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.9rem;
+  margin: 0.1rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+.checklist li::before { content: "○ "; }
+.checklist li.is-met { color: #fff; }
+.checklist li.is-met::before { content: "✓ "; color: var(--pink-light); }
+
+.card__text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+}
+.card__text--muted { font-size: 0.8rem; color: rgba(255, 255, 255, 0.65); }
+.card__text strong { font-weight: 600; overflow-wrap: anywhere; }
+
 /* Browsers paint autofilled inputs pale blue. Keep them on theme. */
 .field input:-webkit-autofill {
   -webkit-text-fill-color: #fff;
@@ -212,6 +254,17 @@ body {
 }
 
 .btn:hover  { box-shadow: 0 6px 22px rgba(252, 154, 208, 0.35); }
+.btn:disabled { opacity: 0.7; cursor: progress; }
+
+/* links that look like the button ("Back to log in") */
+.card a.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #111;
+  text-decoration: none;
+}
+.card a.btn:hover { color: #111; }
 .btn:active { transform: scale(0.97); }
 .btn:focus-visible { outline: 2px solid var(--pink-light); outline-offset: 3px; }
 
@@ -229,9 +282,24 @@ body {
 .card a:hover { color: var(--pink-light); }
 .card a:focus-visible { outline: 2px solid var(--pink-light); outline-offset: 3px; border-radius: 2px; }
 
-/* ---------- 10. Page transitions ----------
-/* Both cards sit in the same grid cell. Only the active one is visible. */
-.stage { position: relative; z-index: 1; display: grid; }
+/* ---------- 10. Banner ("Session ended") ---------- */
+.banner {
+  position: relative;
+  z-index: 1;
+  margin: 1.4rem 6.8cqw 0;
+  padding: 0.8rem 1.1rem;
+  font-size: 0.85rem;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--pink-light);
+  border-radius: 0.8rem;
+}
+.banner[hidden] { display: none; }
+.banner:not([hidden]) + .stage .card { --card-gap: 1.6rem; }
+
+/* ---------- 11. Page transitions ----------
+   All cards sit in the same grid cell. Only the active one is visible. */
+.stage { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr); } /* hidden cards must not widen the column */
 
 .card {
   grid-area: 1 / 1;
@@ -242,8 +310,7 @@ body {
   transition: opacity 0.4s ease, transform 0.4s ease, visibility 0s 0.4s;
 }
 
-.screen[data-view="login"]  .card--login,
-.screen[data-view="signup"] .card--signup {
+.card.is-active {
   opacity: 1;
   visibility: visible;
   transform: none;
@@ -253,5 +320,3 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .card, .btn, .field input { transition: none; }
 }
-
-.requestMatchers("/api/auth/**", "/auth.html", "/css/**", "/js/**").permitAll()

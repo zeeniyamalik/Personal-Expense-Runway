@@ -51,7 +51,7 @@ public class PasswordResetService {
             String token = newToken();
             tokenRepository.save(new PasswordResetToken(hash(token), user, LocalDateTime.now().plusMinutes(TOKEN_MINUTES)));
 
-            String link = frontendBaseUrl + "/reset-password.html?token=" + token;
+            String link = frontendBaseUrl + "/auth.html?reset=" + token;
             emailSender.send(user.getEmail(), "Reset your Expense Runway password",
                     "Use this link to choose a new password. It works once and expires in " + TOKEN_MINUTES + " minutes:\n" + link);
         });
