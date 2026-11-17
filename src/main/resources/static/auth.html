@@ -9,9 +9,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Instrument+Serif&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/auth.css">
-    <script src="js/api.js" defer></script>
-    <script src="js/auth.js" defer></script>
+    <link rel="stylesheet" href="css/auth.css?v=2">
+    <script src="js/api.js?v=2" defer></script>
+    <script src="js/auth.js?v=2" defer></script>
 </head>
 <body>
 <main class="screen" data-view="login">
@@ -55,7 +55,7 @@
         <!-- LOGIN -->
         <section class="card card--login" data-card="login" aria-labelledby="login-title">
             <h1 class="title" id="login-title"><span>Welcome</span><span>Back</span></h1>
-            <form class="form" id="login-form" novalidate>
+            <form class="form" id="login-form" method="post" novalidate>
                 <div class="field">
                     <label for="login-email">Email</label>
                     <input id="login-email" name="email" type="email" placeholder="you@example.com"
@@ -81,7 +81,7 @@
         <!-- SIGNUP -->
         <section class="card card--signup" data-card="signup" aria-labelledby="signup-title">
             <h1 class="title" id="signup-title"><span>Start your</span><span>Runway</span></h1>
-            <form class="form" id="signup-form" novalidate>
+            <form class="form" id="signup-form" method="post" novalidate>
                 <div class="field">
                     <label for="signup-name">Full Name</label>
                     <input id="signup-name" name="name" type="text" placeholder="Your name"
@@ -125,7 +125,7 @@
         <!-- FORGOT PASSWORD -->
         <section class="card card--small" data-card="forgot" aria-labelledby="forgot-title">
             <h1 class="title title--long" id="forgot-title"><span>Forgot</span><span>Password</span></h1>
-            <form class="form" id="forgot-form" novalidate>
+            <form class="form" id="forgot-form" method="post" novalidate>
                 <p class="card__text">Enter the email you signed up with and we'll send you a link to choose a new password.</p>
                 <div class="field">
                     <label for="forgot-email">Email</label>
@@ -157,7 +157,7 @@
         <!-- SET NEW PASSWORD (opened from the email link) -->
         <section class="card card--small" data-card="reset" aria-labelledby="reset-title">
             <h1 class="title title--long" id="reset-title"><span>New</span><span>Password</span></h1>
-            <form class="form" id="reset-form" novalidate>
+            <form class="form" id="reset-form" method="post" novalidate>
                 <div class="field">
                     <label for="reset-password">New password</label>
                     <input id="reset-password" name="newPassword" type="password" placeholder="At least 8 characters"
