@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 
@@ -59,8 +60,10 @@ public class ExpenseController {
 
 
     @GetMapping("/summary/category")
-    public List<CategorySummary> getCategorySummary(@AuthenticationPrincipal User currentUser) {
-            return expenseService.getCategorySummary(currentUser);
+    // Optional month, for example /api/expenses/summary/category?month=2026-11
+    public List<CategorySummary> getCategorySummary(@RequestParam(required = false) YearMonth month,
+                                                    @AuthenticationPrincipal User currentUser) {
+            return expenseService.getCategorySummary(currentUser, month);
         }
 
     @GetMapping("/summary/monthly")
@@ -74,7 +77,7 @@ public class ExpenseController {
     }
 
     @GetMapping("/forecast")
-    public List<ForecastResponse> getForecast( @AuthenticationPrincipal User currentUser) {
+    public ForecastResponse getForecast( @AuthenticationPrincipal User currentUser) {
         return expenseService.getForecast(currentUser);
     }
 

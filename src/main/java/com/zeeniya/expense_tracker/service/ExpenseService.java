@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -89,7 +90,9 @@ public class ExpenseService {
     //CRUD Operations end
 
     //CATEGORY SUMMARY FEATURE
-    public List<CategorySummary> getCategorySummary(User currentUser) {
+    // month is optional: null means all expenses ever, otherwise only that month.
+    // Sorted biggest first, so the first item is the category that "leads".
+    public List<CategorySummary> getCategorySummary(User currentUser, YearMonth month) {
         List<CategorySummary> categorySummary = new ArrayList<>();
         List<Expense> expenses = expenseRepository.findByUserId(currentUser.getId());
 
@@ -97,6 +100,9 @@ public class ExpenseService {
         BigDecimal totalSpent = BigDecimal.ZERO;
 
         for (Expense expense : expenses) {
+            if (month != null && !YearMonth.from(expense.getDate()).equals(month)) {
+                continue;
+            }
             totalSpent = totalSpent.add(expense.getAmount());
             categoryTotals.merge(expense.getCategory(), expense.getAmount(), BigDecimal::add);
         }
@@ -109,6 +115,7 @@ public class ExpenseService {
 
             categorySummary.add(new CategorySummary(category, total, percentage));
         }
+        categorySummary.sort(Comparator.comparing(CategorySummary::getTotal).reversed());
         return categorySummary;
     }
 
@@ -127,6 +134,8 @@ public class ExpenseService {
         for (Map.Entry<YearMonth, BigDecimal> entry : monthlyTotal.entrySet()) {
             monthlySummaryList.add(new MonthlySummary(entry.getKey(), entry.getValue()));
         }
+        // a HashMap has no order, so sort oldest month first
+        monthlySummaryList.sort(Comparator.comparing(MonthlySummary::getMonth));
         return monthlySummaryList;
     }
 
@@ -199,39 +208,54 @@ public class ExpenseService {
         );
     }
     //FORECAST FEATURE
-    public List<ForecastResponse> getForecast(User currentUser) {
-        List<ForecastResponse> forecastList = new ArrayList<>();
-        List<Expense> expenses = expenseRepository.findByUserId(currentUser.getId());
-        Map<String, Map<YearMonth, BigDecimal>> categoryMonthTotals = new HashMap<>();
-        YearMonth currentMonth = YearMonth.now();
-        for (Expense expense : expenses) {
-            String category = expense.getCategory();
-            YearMonth month = YearMonth.from(expense.getDate());
+    // The forecast for each category is the average of the last 3 full months. A month with
+    // no spending in that category counts as 0. The same average is used for each of the
+    // next 3 months.
+    public static final int FORECAST_MONTHS_NEEDED = 3;
 
-            categoryMonthTotals
-                    .computeIfAbsent(category, k -> new HashMap<>())
-                    .merge(month, expense.getAmount(), BigDecimal::add);
+    public ForecastResponse getForecast(User currentUser) {
+        List<Expense> expenses = expenseRepository.findByUserId(currentUser.getId());
+        YearMonth currentMonth = YearMonth.now();
+
+        // Full months of history: from the month of the first expense up to last month.
+        // The current month is still running, so it does not count.
+        int completedMonths = 0;
+        Optional<YearMonth> firstMonth = expenses.stream()
+                .map(e -> YearMonth.from(e.getDate()))
+                .min(Comparator.naturalOrder());
+        if (firstMonth.isPresent() && firstMonth.get().isBefore(currentMonth)) {
+            completedMonths = (int) firstMonth.get().until(currentMonth, ChronoUnit.MONTHS);
         }
 
-        for (String category : categoryMonthTotals.keySet()) {
-            Map<YearMonth, BigDecimal> monthMap = categoryMonthTotals.get(category);
+        List<CategoryForecast> forecasts = new ArrayList<>();
+        if (completedMonths < FORECAST_MONTHS_NEEDED) {
+            return new ForecastResponse(completedMonths, FORECAST_MONTHS_NEEDED, forecasts);
+        }
 
-            List<YearMonth> completedMonths = new ArrayList<>(monthMap.keySet());
-            completedMonths.removeIf(m -> !m.isBefore(currentMonth));
-            Collections.sort(completedMonths);
-
-            if (completedMonths.size() >= 3) {
-                int size = completedMonths.size();
-
-                BigDecimal total = monthMap.get(completedMonths.get(size - 1))
-                        .add(monthMap.get(completedMonths.get(size - 2)))
-                        .add(monthMap.get(completedMonths.get(size - 3)));
-
-                BigDecimal forecast = total.divide(BigDecimal.valueOf(3), 2, RoundingMode.HALF_UP);
-                forecastList.add(new ForecastResponse(category, forecast));
+        // Total per category over the last 3 full months only.
+        YearMonth firstCounted = currentMonth.minusMonths(FORECAST_MONTHS_NEEDED);
+        Map<String, BigDecimal> categoryTotals = new HashMap<>();
+        for (Expense expense : expenses) {
+            YearMonth month = YearMonth.from(expense.getDate());
+            if (!month.isBefore(firstCounted) && month.isBefore(currentMonth)) {
+                categoryTotals.merge(expense.getCategory(), expense.getAmount(), BigDecimal::add);
             }
         }
-        return forecastList;
+
+        for (Map.Entry<String, BigDecimal> entry : categoryTotals.entrySet()) {
+            BigDecimal average = entry.getValue()
+                    .divide(BigDecimal.valueOf(FORECAST_MONTHS_NEEDED), 2, RoundingMode.HALF_UP);
+
+            List<MonthForecast> months = new ArrayList<>();
+            for (int i = 1; i <= 3; i++) {
+                months.add(new MonthForecast(currentMonth.plusMonths(i), average));
+            }
+            forecasts.add(new CategoryForecast(entry.getKey(), months));
+        }
+        // biggest category first
+        forecasts.sort(Comparator.comparing((CategoryForecast f) -> f.getMonths().get(0).getForecast()).reversed());
+
+        return new ForecastResponse(completedMonths, FORECAST_MONTHS_NEEDED, forecasts);
     }
 
 

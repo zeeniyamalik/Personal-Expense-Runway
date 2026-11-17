@@ -1,6 +1,7 @@
 package com.zeeniya.expense_tracker.ai;
 
 import com.zeeniya.expense_tracker.dto.BurnRateWarning;
+import com.zeeniya.expense_tracker.dto.CategoryForecast;
 import com.zeeniya.expense_tracker.dto.CategorySummary;
 import com.zeeniya.expense_tracker.dto.ExpenseRequest;
 import com.zeeniya.expense_tracker.dto.ForecastResponse;
@@ -155,8 +156,8 @@ public class GeminiService {
 
     public InsightResponse getSpendingInsights(User currentUser) {
         BurnRateWarning burnRate = expenseService.getBurnRate(currentUser);
-        List<CategorySummary> categories = expenseService.getCategorySummary(currentUser);
-        List<ForecastResponse> forecast = expenseService.getForecast(currentUser);
+        List<CategorySummary> categories = expenseService.getCategorySummary(currentUser, null);
+        ForecastResponse forecast = expenseService.getForecast(currentUser);
 
         // no expenses, no point calling Gemini
         if (categories.isEmpty()) {
@@ -189,11 +190,12 @@ public class GeminiService {
         }
 
         data.append("\nFORECAST NEXT MONTH BY CATEGORY\n");
-        if (forecast.isEmpty()) {
+        if (forecast.getForecasts().isEmpty()) {
             data.append("Not available yet (needs at least 3 months of history).\n");
         }
-        for (ForecastResponse f : forecast) {
-            data.append(f.getCategory()).append(": ").append(f.getForecast()).append("\n");
+        // every forecast month has the same value, so next month is enough for the AI
+        for (CategoryForecast f : forecast.getForecasts()) {
+            data.append(f.getCategory()).append(": ").append(f.getMonths().get(0).getForecast()).append("\n");
         }
 
         String prompt = """

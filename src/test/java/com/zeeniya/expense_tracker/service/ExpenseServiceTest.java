@@ -254,7 +254,7 @@ class ExpenseServiceTest {
         expense3.setUser(currentUser);
         when(expenseRepository.findByUserId(currentUser.getId())).thenReturn(List.of(expense1, expense2, expense3));
 
-        List<CategorySummary> result = expenseService.getCategorySummary(currentUser);
+        List<CategorySummary> result = expenseService.getCategorySummary(currentUser, null);
 
         CategorySummary food = result.stream().filter(c -> c.getCategory().equals("Food")).findFirst().orElseThrow();
         assertThat(food.getTotal()).isEqualByComparingTo("500.00");
@@ -263,10 +263,25 @@ class ExpenseServiceTest {
     }
 
     @Test
+    void getCategorySummary_withMonth_countsOnlyThatMonth_biggestFirst() {
+        when(expenseRepository.findByUserId(currentUser.getId())).thenReturn(List.of(
+                expenseOn(1, "Food", "2026-11-02"),
+                expenseOn(2, "Travel", "2026-11-03"),
+                expenseOn(3, "Travel", "2026-11-20"),
+                expenseOn(4, "Food", "2026-10-15")));
+
+        List<CategorySummary> result = expenseService.getCategorySummary(currentUser, YearMonth.of(2026, 11));
+
+        assertThat(result).extracting(CategorySummary::getCategory).containsExactly("Travel", "Food");
+        assertThat(result.get(0).getTotal()).isEqualByComparingTo("200.00");
+        assertThat(result.get(1).getTotal()).isEqualByComparingTo("100.00");
+    }
+
+    @Test
     void getCategorySummary_returnsEmptyList_whenNoExpenseFound(){
         when(expenseRepository.findByUserId(currentUser.getId())).thenReturn(List.of());
 
-        List<CategorySummary> result = expenseService.getCategorySummary(currentUser);
+        List<CategorySummary> result = expenseService.getCategorySummary(currentUser, null);
 
         assertThat(result).isEmpty();
     }
@@ -285,6 +300,8 @@ class ExpenseServiceTest {
         List<MonthlySummary> result = expenseService.getMonthlySummary(currentUser);
 
         assertThat(result).hasSize(2);
+        assertThat(result).extracting(MonthlySummary::getMonth)
+                .containsExactly(currentMonth.minusMonths(1), currentMonth);
         assertThat(result).anySatisfy(summary -> {
             assertThat(summary.getMonth()).isEqualTo(currentMonth);
             assertThat(summary.getTotal()).isEqualByComparingTo("500.00");
@@ -326,36 +343,68 @@ class ExpenseServiceTest {
         assertThat(result.isOverBudget()).isFalse();
     }
 
-    @Test
-    void getForecast_excludesCurrentInProgressMonth() {
-        YearMonth thisMonth = YearMonth.now();
-        Expense m1 = new Expense("Food", new BigDecimal("300.00"), thisMonth.minusMonths(1).atDay(1), "");
-        Expense m2 = new Expense("Food", new BigDecimal("300.00"), thisMonth.minusMonths(2).atDay(1), "");
-        Expense m3 = new Expense("Food", new BigDecimal("300.00"), thisMonth.minusMonths(3).atDay(1), "");
-        Expense current = new Expense("Food", new BigDecimal("999999.00"), LocalDate.now(), null);
-        m1.setUser(currentUser);
-        m2.setUser(currentUser);
-        m3.setUser(currentUser);
-        current.setUser(currentUser);
-
-        when(expenseRepository.findByUserId(currentUser.getId())).thenReturn(List.of(m1, m2, m3, current));
-
-        List<ForecastResponse> result = expenseService.getForecast(currentUser);
-        ForecastResponse food = result.stream().filter(f -> f.getCategory().equals("Food")).findFirst().orElseThrow();
-        //will exclude current month
-        assertThat(food.getForecast()).isEqualByComparingTo("300.00");
+    private Expense expenseIn(YearMonth month, String category, String amount) {
+        Expense expense = new Expense(category, new BigDecimal(amount), month.atDay(1), "");
+        expense.setUser(currentUser);
+        return expense;
     }
 
     @Test
-    void getForecast_excludesCategoriesWithLessThan3Months() {
+    void getForecast_givesNext3Months_andExcludesCurrentInProgressMonth() {
         YearMonth thisMonth = YearMonth.now();
-        Expense onlyOne = new Expense("Rent", new BigDecimal("1000.00"), thisMonth.minusMonths(1).atDay(1), "");
-        onlyOne.setUser(currentUser);
+        when(expenseRepository.findByUserId(currentUser.getId())).thenReturn(List.of(
+                expenseIn(thisMonth.minusMonths(1), "Food", "300.00"),
+                expenseIn(thisMonth.minusMonths(2), "Food", "300.00"),
+                expenseIn(thisMonth.minusMonths(3), "Food", "300.00"),
+                expenseIn(thisMonth, "Food", "999999.00")));
 
-        when(expenseRepository.findByUserId(currentUser.getId())).thenReturn(List.of(onlyOne));
+        ForecastResponse result = expenseService.getForecast(currentUser);
 
-        List<ForecastResponse> result = expenseService.getForecast(currentUser);
-        assertThat(result).isEmpty();
+        assertThat(result.getCompletedMonths()).isEqualTo(3);
+        CategoryForecast food = result.getForecasts().get(0);
+        assertThat(food.getCategory()).isEqualTo("Food");
+        assertThat(food.getMonths()).extracting(MonthForecast::getMonth)
+                .containsExactly(thisMonth.plusMonths(1), thisMonth.plusMonths(2), thisMonth.plusMonths(3));
+        assertThat(food.getMonths()).allSatisfy(m -> assertThat(m.getForecast()).isEqualByComparingTo("300.00"));
+    }
+
+    @Test
+    void getForecast_countsAMonthWithoutSpendingAsZero() {
+        YearMonth thisMonth = YearMonth.now();
+        // Food was bought 1 and 3 months ago but not 2 months ago, and long ago in month 6
+        when(expenseRepository.findByUserId(currentUser.getId())).thenReturn(List.of(
+                expenseIn(thisMonth.minusMonths(1), "Food", "300.00"),
+                expenseIn(thisMonth.minusMonths(3), "Food", "300.00"),
+                expenseIn(thisMonth.minusMonths(6), "Food", "300.00")));
+
+        ForecastResponse result = expenseService.getForecast(currentUser);
+
+        // (300 + 0 + 300) / 3, the old month 6 expense is not used
+        assertThat(result.getForecasts().get(0).getMonths().get(0).getForecast()).isEqualByComparingTo("200.00");
+    }
+
+    @Test
+    void getForecast_withLessThan3FullMonths_returnsEmptyListAndMonthsSoFar() {
+        YearMonth thisMonth = YearMonth.now();
+        when(expenseRepository.findByUserId(currentUser.getId())).thenReturn(List.of(
+                expenseIn(thisMonth.minusMonths(1), "Utilities", "1000.00"),
+                expenseIn(thisMonth, "Food", "50.00")));
+
+        ForecastResponse result = expenseService.getForecast(currentUser);
+
+        assertThat(result.getForecasts()).isEmpty();
+        assertThat(result.getCompletedMonths()).isEqualTo(1);
+        assertThat(result.getMonthsNeeded()).isEqualTo(3);
+    }
+
+    @Test
+    void getForecast_withNoExpenses_hasZeroCompletedMonths() {
+        when(expenseRepository.findByUserId(currentUser.getId())).thenReturn(List.of());
+
+        ForecastResponse result = expenseService.getForecast(currentUser);
+
+        assertThat(result.getForecasts()).isEmpty();
+        assertThat(result.getCompletedMonths()).isZero();
     }
 
     @Test

@@ -41,10 +41,10 @@ Status key: [ ] not started
 - [x] **Gemini timeouts.** `RestClientConfig` had no timeouts, so a stalled call hung forever. Now 5 s to connect and 20 s to read, and any read failure gives 503 (`RestClientException` catch in `GeminiService.callGemini`).
 - [x] **Categories.** Figma list: Food, Travel, Entertainment, Shopping, Medical, Utilities, Other. The Gemini prompt now uses this list (`ExpenseCategories.ALL`) and may not invent categories. Whatever the AI answers goes through `ExpenseCategories.toListed`: exact name (any case), then a keyword match ("Bills" to Utilities, "Groceries" to Food), else Other. Tested in `ExpenseCategoriesTest`. Old rows in the database are left as they are. Manual `POST /api/expenses` still accepts any category name.
 - [x] **History filters.** `GET /api/expenses?category=&from=YYYY-MM-DD&to=YYYY-MM-DD`, all optional, still a plain list (decision: no paging, no text search), sorted newest first. Category ignores case, both dates are included, `from` after `to` gives 400. Tested in `ExpenseServiceTest` and by curl.
-- [ ] `GET /api/expenses/summary/category?month=YYYY-MM` (the Analysis month picker and "Food leads" on Home need a month).
-- [ ] Monthly summary sorted by month.
-- [ ] **Forecast, 3 months.** `GET /api/expenses/forecast` returns the next 3 months per category: `[{category, months:[{month, forecast}]}]`. Today it returns one number per category.
-- [ ] "Not enough history" must be a clear response (empty list is fine), with the number of completed months so far.
+- [x] `GET /api/expenses/summary/category?month=YYYY-MM`, month optional (without it: all time, as before). Sorted biggest first, so the first item is the category that "leads".
+- [x] Monthly summary sorted by month, oldest first.
+- [x] **Forecast, 3 months.** `GET /api/expenses/forecast` returns `{completedMonths, monthsNeeded, forecasts:[{category, months:[{month, forecast}]}]}` for the next 3 months. Each category's forecast is the average of the last 3 full months, a month without spending counts as 0 (before, it used the last 3 months that had spending, however old). All 3 months show the same average, sorted biggest first.
+- [x] "Not enough history": `forecasts` is empty and `completedMonths` (full months since the first expense, current month not counted) tells the screen how far along the user is.
 
 ## 3. Budgets
 
