@@ -80,5 +80,5 @@ Status key: [ ] not started
 ## 7. After the backend is done (before posting the project)
 
 - [x] **Real email sending (SMTP), code done.** `SmtpEmailSender` (Spring `JavaMailSender`), chosen with `MAIL_SENDER=smtp` in `.env`; without it the app keeps printing emails in the console. Settings come from `.env`: `MAIL_HOST` (default smtp.gmail.com), `MAIL_PORT` (587), `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM` (defaults to the username), `APP_BASE_URL` for the link (default http://localhost:8080). A failed send is logged, not shown to the user, so the answer never reveals which emails have accounts. Checked: the app connects to Gmail and logs "Authentication failed" with a fake password.
-  - [ ] **You:** put a real Gmail address and app password in `.env`, set `MAIL_SENDER=smtp`, restart, and test with a real inbox: email arrives (check spam), link works, expires after 30 minutes.
-  - [ ] **You, when the site is online:** set `APP_BASE_URL` to the real address.
+  - [x] Real Gmail account set in `.env` and tested on 2026-11-17: the reset email arrived. The link page (`reset-password.html`) is part of the frontend; test the full reset once it exists.
+  - [ ] **You, when the site is online:** follow `public_launch.md` (set `APP_BASE_URL` and the other server values).
