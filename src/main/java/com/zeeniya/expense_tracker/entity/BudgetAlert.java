@@ -14,9 +14,17 @@ public class BudgetAlert {
 
     // The column in MySQL is "alert_month". The old @JoinColumn (meant for relations)
     // set that name; @Column is the right annotation for a plain value and keeps the name.
-    // No "unique": that would allow only one alert per month for the whole app.
+    // No "unique": a month can have several alerts.
     @Column(name = "alert_month")
     private YearMonth month;
+
+    // Stored as text ("OVER_BUDGET"), so adding a new type later does not shift old rows.
+    // Alerts created before types existed have no type.
+    @Enumerated(EnumType.STRING)
+    private AlertType type;
+
+    // Only for UNUSUAL_EXPENSE: the expense the "View expense" button opens.
+    private Long expenseId;
 
     private String message;
     private boolean dismissed;
@@ -28,15 +36,19 @@ public class BudgetAlert {
 
     public BudgetAlert() {}
 
-    public BudgetAlert(YearMonth month, String message) {
+    public BudgetAlert(YearMonth month, AlertType type, String message, Long expenseId) {
         this.month = month;
+        this.type = type;
         this.message = message;
+        this.expenseId = expenseId;
         this.dismissed = false;
         this.createdAt = LocalDateTime.now();
     }
 
     public Long getId() { return id; }
     public YearMonth getMonth() { return month; }
+    public AlertType getType() { return type; }
+    public Long getExpenseId() { return expenseId; }
     public String getMessage() { return message; }
     public boolean isDismissed() { return dismissed; }
     public LocalDateTime getCreatedAt() { return createdAt; }
@@ -51,4 +63,3 @@ public class BudgetAlert {
 
     public void setDismissed(boolean dismissed) { this.dismissed = dismissed; }
 }
-

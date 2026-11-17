@@ -1,6 +1,8 @@
 package com.zeeniya.expense_tracker.service;
 
 import com.zeeniya.expense_tracker.dto.BurnRateWarning;
+import com.zeeniya.expense_tracker.dto.UnusualExpense;
+import com.zeeniya.expense_tracker.entity.AlertType;
 import com.zeeniya.expense_tracker.entity.BudgetAlert;
 import com.zeeniya.expense_tracker.entity.User;
 import com.zeeniya.expense_tracker.exception.ResourceNotFoundException;
@@ -10,8 +12,11 @@ import com.zeeniya.expense_tracker.repository.UserRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class BudgetAlertService {
@@ -26,7 +31,9 @@ public class BudgetAlertService {
         this.userRepository = userRepository;
     }
 
-    //runs once a day at 8am, and shows the message once a month for each user
+    // Runs once a day at 8am. The check also runs whenever the user changes an expense or
+    // a budget (called from the controllers), so the daily run catches the pace changing
+    // simply because days pass.
     @Scheduled(cron = "0 0 8 * * *")          //scheduled method calling normal method
     public void checkBurnRateAndCreateAlertsForAllUsers() {
         List<User> allUsers = userRepository.findAll();
@@ -35,38 +42,51 @@ public class BudgetAlertService {
         }
     }
 
+    // Rules:
+    // - Over budget: at most one alert per month. If the pace drops back under the budget,
+    //   the active alert is removed.
+    // - Unusual expense: one alert per expense. If the expense is deleted or no longer
+    //   unusual, its active alert is removed.
+    // A dismissed alert is never created again, but it does not block other alerts.
     public void checkBurnRateAndCreateAlert(User currentUser) {
-        BurnRateWarning burnRate = expenseService.getBurnRate(currentUser);
         YearMonth currentMonth = YearMonth.now();
+        Long userId = currentUser.getId();
+        List<BudgetAlert> activeAlerts = budgetAlertRepository.findByMonthAndDismissedFalseAndUserId(currentMonth, userId);
 
-        if (!burnRate.isBudgetSet()) {
-            return;
-        }
-
-        boolean shouldAlert = burnRate.isOverBudget() || burnRate.isHasAnomaly();
-        if (!shouldAlert) {
-            return;
-        }
-
-        boolean alertAlreadyExists = budgetAlertRepository.findByMonthAndUserId(currentMonth, currentUser.getId()).isPresent();
-        if (alertAlreadyExists) {
-            return;
-        }
-
-        String message;
-        if (burnRate.isOverBudget() && burnRate.isHasAnomaly()) {
-            message = "You're projected to spend Rs." + burnRate.getProjectedTotal()
-                    + " this month, over your budget of Rs." + burnRate.getMonthlyBudget()
-                    + "! Also: " + burnRate.getAnomalyMessage();
-        } else if (burnRate.isOverBudget()) {
-            message = "You're projected to spend Rs." + burnRate.getProjectedTotal()
-                    + " this month, over your budget of Rs." + burnRate.getMonthlyBudget() + "!";
+        BurnRateWarning burnRate = expenseService.getBurnRate(currentUser);
+        if (burnRate.isOverBudget()) {
+            if (!budgetAlertRepository.existsByMonthAndTypeAndUserId(currentMonth, AlertType.OVER_BUDGET, userId)) {
+                String message = "You're projected to spend Rs." + burnRate.getProjectedTotal()
+                        + " this month, over your budget of Rs." + burnRate.getMonthlyBudget() + "!";
+                save(new BudgetAlert(currentMonth, AlertType.OVER_BUDGET, message, null), currentUser);
+            }
         } else {
-            message = burnRate.getAnomalyMessage();
+            for (BudgetAlert alert : activeAlerts) {
+                if (alert.getType() == AlertType.OVER_BUDGET) {
+                    budgetAlertRepository.delete(alert);
+                }
+            }
         }
 
-        BudgetAlert alert = new BudgetAlert(currentMonth, message);
-        alert.setUser(currentUser);
+        Set<Long> unusualExpenseIds = new HashSet<>();
+        for (UnusualExpense unusual : expenseService.getUnusualExpenses(currentUser)) {
+            Long expenseId = unusual.getExpense().getId();
+            unusualExpenseIds.add(expenseId);
+            if (!budgetAlertRepository.existsByTypeAndExpenseIdAndUserId(AlertType.UNUSUAL_EXPENSE, expenseId, userId)) {
+                save(new BudgetAlert(currentMonth, AlertType.UNUSUAL_EXPENSE, unusual.getMessage(), expenseId), currentUser);
+            }
+        }
+        for (BudgetAlert alert : activeAlerts) {
+            if (alert.getType() == AlertType.UNUSUAL_EXPENSE && !unusualExpenseIds.contains(alert.getExpenseId())) {
+                budgetAlertRepository.delete(alert);
+            }
+        }
+
+        userRepository.updateAlertsCheckedAt(userId, LocalDateTime.now());
+    }
+
+    private void save(BudgetAlert alert, User user) {
+        alert.setUser(user);
         budgetAlertRepository.save(alert);
     }
 

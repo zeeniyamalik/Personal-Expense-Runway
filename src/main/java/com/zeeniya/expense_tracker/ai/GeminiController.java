@@ -4,7 +4,9 @@ import com.zeeniya.expense_tracker.dto.ExpenseResponse;
 import com.zeeniya.expense_tracker.dto.ai.ExpenseParseRequest;
 import com.zeeniya.expense_tracker.dto.ai.ExpenseParseResponse;
 import com.zeeniya.expense_tracker.dto.ai.InsightResponse;
+import com.zeeniya.expense_tracker.entity.Expense;
 import com.zeeniya.expense_tracker.entity.User;
+import com.zeeniya.expense_tracker.service.BudgetAlertService;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +15,11 @@ import org.springframework.web.bind.annotation.*;
 public class GeminiController {
 
     private final GeminiService geminiService;
+    private final BudgetAlertService budgetAlertService;
 
-    public GeminiController(GeminiService geminiService) {
+    public GeminiController(GeminiService geminiService, BudgetAlertService budgetAlertService) {
         this.geminiService = geminiService;
+        this.budgetAlertService = budgetAlertService;
     }
 
     @PostMapping("/api/expenses/parse")
@@ -23,7 +27,9 @@ public class GeminiController {
             @RequestBody ExpenseParseRequest request,
             @AuthenticationPrincipal User currentUser) {
 
-        return ExpenseResponse.from(geminiService.parseAndSaveExpense(request.getUserInput(), currentUser));
+        Expense saved = geminiService.parseAndSaveExpense(request.getUserInput(), currentUser);
+        budgetAlertService.checkBurnRateAndCreateAlert(currentUser);
+        return ExpenseResponse.from(saved);
     }
 
     // Same parsing as /parse, but nothing is saved.

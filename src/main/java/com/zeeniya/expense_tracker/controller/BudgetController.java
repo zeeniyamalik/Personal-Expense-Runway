@@ -4,6 +4,8 @@ import com.zeeniya.expense_tracker.dto.BudgetHistoryItem;
 import com.zeeniya.expense_tracker.dto.BudgetRequest;
 import com.zeeniya.expense_tracker.dto.BudgetResponse;
 import com.zeeniya.expense_tracker.entity.User;
+import com.zeeniya.expense_tracker.entity.Budget;
+import com.zeeniya.expense_tracker.service.BudgetAlertService;
 import com.zeeniya.expense_tracker.service.BudgetService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,14 +19,19 @@ import java.util.List;
 public class BudgetController {
 
     private final BudgetService budgetService;
+    private final BudgetAlertService budgetAlertService;
 
-    public BudgetController(BudgetService budgetService) {
+    // After every change to a budget, the alert check runs again for this user.
+    public BudgetController(BudgetService budgetService, BudgetAlertService budgetAlertService) {
         this.budgetService = budgetService;
+        this.budgetAlertService = budgetAlertService;
     }
 
     @PostMapping
     public BudgetResponse setBudget(@Valid @RequestBody BudgetRequest request, @AuthenticationPrincipal User currentUser) {
-        return BudgetResponse.from(budgetService.setBudget(request, currentUser));
+        Budget saved = budgetService.setBudget(request, currentUser);
+        budgetAlertService.checkBurnRateAndCreateAlert(currentUser);
+        return BudgetResponse.from(saved);
     }
 
     // Spring picks an exact path over /{month}, so "history" is never read as a month.
@@ -48,12 +55,15 @@ public class BudgetController {
 
     @PutMapping("/{month}")
     public BudgetResponse updateBudget(@PathVariable YearMonth month, @Valid @RequestBody BudgetRequest request, @AuthenticationPrincipal User currentUser) {
-        return BudgetResponse.from(budgetService.updateBudget(month, request, currentUser));
+        Budget updated = budgetService.updateBudget(month, request, currentUser);
+        budgetAlertService.checkBurnRateAndCreateAlert(currentUser);
+        return BudgetResponse.from(updated);
     }
 
     @DeleteMapping("/{month}")
     public void deleteBudget(@PathVariable YearMonth month, @AuthenticationPrincipal User currentUser) {
         budgetService.deleteBudget(month, currentUser);
+        budgetAlertService.checkBurnRateAndCreateAlert(currentUser);
     }
 
 }

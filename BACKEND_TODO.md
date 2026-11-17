@@ -55,12 +55,15 @@ Status key: [ ] not started
 
 ## 4. Alerts
 
-- [ ] Return a DTO, not the `BudgetAlert` entity.
-- [ ] Add `type` (`OVER_BUDGET` or `UNUSUAL_EXPENSE`), `expenseId` (for "View expense"), `createdAt`.
-- [ ] Add "last checked" time (shown on the Alerts screen).
-- [ ] Run the check when an expense or budget changes, not only at 8am.
-- [ ] Allow more than one alert per month, and do not let a dismissed alert block a new one.
-- [ ] Dismiss exists (`PUT /api/alerts/{id}/dismiss`). The design now has a dismiss control. Keep it.
+- [x] Return a DTO, not the `BudgetAlert` entity. `GET /api/alerts/active` now returns `{lastChecked, alerts:[{id, type, message, month, expenseId, createdAt}]}`.
+- [x] Add `type` (`OVER_BUDGET` or `UNUSUAL_EXPENSE`), `expenseId` (for "View expense"), `createdAt`.
+- [x] Add "last checked" time: `users.alerts_checked_at`, set every time the check runs (null until the first check).
+- [x] Run the check when an expense or budget changes, not only at 8am. The controllers call `BudgetAlertService.checkBurnRateAndCreateAlert` after add/edit/delete expense (also the AI `/parse`) and set/edit/delete budget. The 8am run stays, because the pace changes as days pass.
+- [x] Allow more than one alert per month, and do not let a dismissed alert block a new one. Rules:
+  - Over budget: one per month. Removed when the pace drops back under the budget. Changing or deleting the budget resets it, so a lower budget can alert again even if the old alert was dismissed.
+  - Unusual expense: one per expense (no longer needs a budget). Removed when that expense is deleted or no longer unusual. Every unusual expense this month gets its own alert, not only the first.
+  - A dismissed alert never comes back by itself.
+- [x] Dismiss exists (`PUT /api/alerts/{id}/dismiss`). Kept.
 
 ## 5. AI insights
 

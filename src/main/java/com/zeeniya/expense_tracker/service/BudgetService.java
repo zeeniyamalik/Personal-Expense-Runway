@@ -3,6 +3,7 @@ package com.zeeniya.expense_tracker.service;
 import com.zeeniya.expense_tracker.dto.BudgetHistoryItem;
 import com.zeeniya.expense_tracker.dto.BudgetRequest;
 import com.zeeniya.expense_tracker.dto.MonthlySummary;
+import com.zeeniya.expense_tracker.entity.AlertType;
 import com.zeeniya.expense_tracker.entity.Budget;
 import com.zeeniya.expense_tracker.entity.User;
 import com.zeeniya.expense_tracker.exception.ResourceNotFoundException;
@@ -55,20 +56,25 @@ public class BudgetService {
         return budgetRepository.findByUserId(currentUser.getId());
     }
 
+    // The over-budget alert was based on the old amount, so it is removed (even if dismissed).
+    // The next alert check decides again with the new amount.
+    @Transactional
     public Budget updateBudget(YearMonth month, BudgetRequest request, User currentUser) {
         Budget existingBudget = getBudget(month, currentUser);
         existingBudget.setAmount(request.getAmount());
 
+        budgetAlertRepository.deleteByMonthAndTypeAndUserId(month, AlertType.OVER_BUDGET, currentUser.getId());
         return budgetRepository.save(existingBudget);
     }
 
-    // The month's alert was based on this budget, so it goes too.
+    // The over-budget alert was based on this budget, so it goes too.
+    // Unusual-expense alerts do not depend on the budget and stay.
     @Transactional
     public void deleteBudget(YearMonth month, User currentUser) {
         Budget existingBudget = getBudget(month, currentUser);
 
         budgetRepository.delete(existingBudget);
-        budgetAlertRepository.deleteByMonthAndUserId(month, currentUser.getId());
+        budgetAlertRepository.deleteByMonthAndTypeAndUserId(month, AlertType.OVER_BUDGET, currentUser.getId());
     }
 
     // Past months that had a budget, newest first, with what was actually spent.

@@ -6,6 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -32,6 +33,10 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    // When the alert check last ran for this user ("Last checked" on the Alerts screen).
+    @JsonIgnore
+    private LocalDateTime alertsCheckedAt;
 
     public User(){}
 
@@ -120,6 +125,10 @@ public class User implements UserDetails {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public LocalDateTime getAlertsCheckedAt() {
+        return alertsCheckedAt;
     }
 
 }

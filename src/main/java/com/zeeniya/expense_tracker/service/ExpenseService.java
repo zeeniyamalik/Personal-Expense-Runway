@@ -174,26 +174,10 @@ public class ExpenseService {
             requiredDailyAverage = remainingBudget.divide(BigDecimal.valueOf(remainingDays), 2, RoundingMode.HALF_UP);
         }
 
-        // Anomaly detection
-        boolean hasAnomaly = false;
-        String anomalyMessage = null;
-        if (expenses.size() >= 3) {
-            BigDecimal totalAllTime = BigDecimal.ZERO;
-            for (Expense expense : expenses) {
-                totalAllTime = totalAllTime.add(expense.getAmount());
-            }
-            BigDecimal overallAverage = totalAllTime.divide(BigDecimal.valueOf(expenses.size()), 4, RoundingMode.HALF_UP);
-            BigDecimal anomalyThreshold = overallAverage.multiply(BigDecimal.valueOf(3));
-
-            for (Expense expense : thisMonthExpenses) {
-                if (expense.getAmount().compareTo(anomalyThreshold) > 0) {
-                    hasAnomaly = true;
-                    anomalyMessage = "Unusually large expense: Rs." + expense.getAmount() + " on " + expense.getCategory()
-                            + " (your typical expense is around Rs." + overallAverage.setScale(2, RoundingMode.HALF_UP) + ")";
-                    break;
-                }
-            }
-        }
+        // Anomaly detection: the burn rate only mentions the first unusual expense
+        List<UnusualExpense> unusualExpenses = findUnusualExpenses(expenses, thisMonthExpenses);
+        boolean hasAnomaly = !unusualExpenses.isEmpty();
+        String anomalyMessage = hasAnomaly ? unusualExpenses.get(0).getMessage() : null;
 
         return new BurnRateWarning(
                 monthlyBudget,
@@ -208,6 +192,39 @@ public class ExpenseService {
         );
     }
     //FORECAST FEATURE
+    // Every expense this month that is more than 3 times the user's average expense.
+    public List<UnusualExpense> getUnusualExpenses(User currentUser) {
+        List<Expense> expenses = expenseRepository.findByUserId(currentUser.getId());
+        YearMonth currentMonth = YearMonth.now();
+        List<Expense> thisMonthExpenses = expenses.stream()
+                .filter(e -> YearMonth.from(e.getDate()).equals(currentMonth))
+                .toList();
+        return findUnusualExpenses(expenses, thisMonthExpenses);
+    }
+
+    private List<UnusualExpense> findUnusualExpenses(List<Expense> allExpenses, List<Expense> thisMonthExpenses) {
+        List<UnusualExpense> unusual = new ArrayList<>();
+        // with fewer than 3 expenses there is no "usual" to compare against
+        if (allExpenses.size() < 3) {
+            return unusual;
+        }
+        BigDecimal totalAllTime = BigDecimal.ZERO;
+        for (Expense expense : allExpenses) {
+            totalAllTime = totalAllTime.add(expense.getAmount());
+        }
+        BigDecimal overallAverage = totalAllTime.divide(BigDecimal.valueOf(allExpenses.size()), 4, RoundingMode.HALF_UP);
+        BigDecimal anomalyThreshold = overallAverage.multiply(BigDecimal.valueOf(3));
+
+        for (Expense expense : thisMonthExpenses) {
+            if (expense.getAmount().compareTo(anomalyThreshold) > 0) {
+                String message = "Unusually large expense: Rs." + expense.getAmount() + " on " + expense.getCategory()
+                        + " (your typical expense is around Rs." + overallAverage.setScale(2, RoundingMode.HALF_UP) + ")";
+                unusual.add(new UnusualExpense(expense, message));
+            }
+        }
+        return unusual;
+    }
+
     // The forecast for each category is the average of the last 3 full months. A month with
     // no spending in that category counts as 0. The same average is used for each of the
     // next 3 months.

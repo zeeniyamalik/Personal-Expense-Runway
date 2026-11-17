@@ -4,6 +4,7 @@ import com.zeeniya.expense_tracker.dto.ExpenseRequest;
 import com.zeeniya.expense_tracker.dto.*;
 import com.zeeniya.expense_tracker.entity.Expense;
 import com.zeeniya.expense_tracker.entity.User;
+import com.zeeniya.expense_tracker.service.BudgetAlertService;
 import com.zeeniya.expense_tracker.service.ExpenseService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,9 +21,12 @@ import java.util.List;
 public class ExpenseController {
 
    private final ExpenseService expenseService;
+   private final BudgetAlertService budgetAlertService;
 
-    public ExpenseController(ExpenseService expenseService) {
+    // After every change to an expense, the alert check runs again for this user.
+    public ExpenseController(ExpenseService expenseService, BudgetAlertService budgetAlertService) {
         this.expenseService = expenseService;
+        this.budgetAlertService = budgetAlertService;
     }
 
     // Optional filters, for example /api/expenses?category=Food&from=2026-11-01&to=2026-11-30
@@ -44,18 +48,23 @@ public class ExpenseController {
 
     @PostMapping
     public ExpenseResponse addExpense(@Valid @RequestBody ExpenseRequest request, @AuthenticationPrincipal User currentUser){
-        return ExpenseResponse.from(expenseService.addExpense(request, currentUser));
+        Expense saved = expenseService.addExpense(request, currentUser);
+        budgetAlertService.checkBurnRateAndCreateAlert(currentUser);
+        return ExpenseResponse.from(saved);
     }
 
 
     @PutMapping("/{id}")
     public ExpenseResponse updateExpense(@PathVariable Long id, @Valid @RequestBody ExpenseRequest request, @AuthenticationPrincipal User currentUser) {
-        return ExpenseResponse.from(expenseService.updateExpense(id, request, currentUser));
+        Expense updated = expenseService.updateExpense(id, request, currentUser);
+        budgetAlertService.checkBurnRateAndCreateAlert(currentUser);
+        return ExpenseResponse.from(updated);
     }
 
     @DeleteMapping("/{id}")
     public void deleteExpense(@PathVariable Long id,  @AuthenticationPrincipal User currentUser) {
          expenseService.deleteExpense(id, currentUser);
+         budgetAlertService.checkBurnRateAndCreateAlert(currentUser);
     }
 
 

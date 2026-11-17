@@ -350,6 +350,26 @@ class ExpenseServiceTest {
     }
 
     @Test
+    void getUnusualExpenses_returnsEveryLargeExpenseThisMonth() {
+        YearMonth thisMonth = YearMonth.now();
+        Expense big1 = expenseIn(thisMonth, "Shopping", "5000.00");
+        big1.setId(10L);
+        Expense big2 = expenseIn(thisMonth, "Travel", "6000.00");
+        big2.setId(11L);
+        Expense bigLastMonth = expenseIn(thisMonth.minusMonths(1), "Medical", "7000.00");
+        List<Expense> expenses = new ArrayList<>(List.of(big1, big2, bigLastMonth));
+        for (int i = 0; i < 20; i++) {
+            expenses.add(expenseIn(thisMonth.minusMonths(1), "Food", "100.00"));
+        }
+        when(expenseRepository.findByUserId(currentUser.getId())).thenReturn(expenses);
+
+        List<UnusualExpense> result = expenseService.getUnusualExpenses(currentUser);
+
+        // last month's large expense is not included
+        assertThat(result).extracting(u -> u.getExpense().getId()).containsExactly(10L, 11L);
+    }
+
+    @Test
     void getForecast_givesNext3Months_andExcludesCurrentInProgressMonth() {
         YearMonth thisMonth = YearMonth.now();
         when(expenseRepository.findByUserId(currentUser.getId())).thenReturn(List.of(

@@ -3,6 +3,7 @@ package com.zeeniya.expense_tracker.service;
 import com.zeeniya.expense_tracker.dto.BudgetHistoryItem;
 import com.zeeniya.expense_tracker.dto.BudgetRequest;
 import com.zeeniya.expense_tracker.dto.MonthlySummary;
+import com.zeeniya.expense_tracker.entity.AlertType;
 import com.zeeniya.expense_tracker.entity.Budget;
 import com.zeeniya.expense_tracker.entity.Role;
 import com.zeeniya.expense_tracker.entity.User;
@@ -164,7 +165,7 @@ class BudgetServiceTest {
 
         verify(budgetRepository, times(1))
                 .delete(existingBudget);
-        verify(budgetAlertRepository).deleteByMonthAndUserId(month, currentUser.getId());
+        verify(budgetAlertRepository).deleteByMonthAndTypeAndUserId(month, AlertType.OVER_BUDGET, currentUser.getId());
     }
 
     @Test
@@ -176,7 +177,7 @@ class BudgetServiceTest {
         assertThatThrownBy(() -> budgetService.deleteBudget(month, currentUser)).isInstanceOf(ResourceNotFoundException.class);
 
         verify(budgetRepository, never()).delete(any(Budget.class));
-        verify(budgetAlertRepository, never()).deleteByMonthAndUserId(any(), any());
+        verify(budgetAlertRepository, never()).deleteByMonthAndTypeAndUserId(any(), any(), any());
     }
 
     //history
