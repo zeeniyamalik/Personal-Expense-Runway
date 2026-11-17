@@ -87,10 +87,10 @@ public class GeminiService {
                 }
                 
                 Rules:
-                1. Category: pick the closest match from this list: Food, Travel, Bills, Shopping, Entertainment, Extra.
-                   Only create a new category if the expense truly does not fit any of them (e.g. "Medical", "Education").
-                   Do not invent a new category just because the wording differs ("groceries" still maps to Food).
-                   Use Title Case for any new category.
+                1. Category: pick the closest match from this list: %s.
+                   Never create a new category. Use exactly one name from the list, spelled as shown
+                   ("groceries" maps to Food, "electricity bill" maps to Utilities).
+                   If nothing fits, use Other.
                 2. Amount: a plain positive number, no currency symbols, no commas, no text.
                    If a range is given ("500-600"), use the higher number.
                    If the amount is missing or unclear, use 0.
@@ -106,13 +106,13 @@ public class GeminiService {
                 
                 Edge cases:
                 - If the input has nothing to do with an expense, still return valid JSON:
-                  category "Extra", amount 0, date today, note briefly explaining the input was unclear, multipleDetected false.
-                
+                  category "Other", amount 0, date today, note briefly explaining the input was unclear, multipleDetected false.
+
                 Today's date is: %s
-                
+
                 User input:
                 %s
-                """.formatted(LocalDate.now(), userInput);
+                """.formatted(String.join(", ", ExpenseCategories.ALL), LocalDate.now(), userInput);
 
         Map<String, Object> schema = Map.of(
                 "type", "OBJECT",
@@ -138,11 +138,16 @@ public class GeminiService {
 
         String rawJson = callGemini(requestBody);
 
+        ExpenseParseResponse parsed;
         try {
-            return objectMapper.readValue(rawJson, ExpenseParseResponse.class);
+            parsed = objectMapper.readValue(rawJson, ExpenseParseResponse.class);
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse Gemini response into ExpenseParseResponse", e);
         }
+
+        // The AI may still answer with a name outside the list, so map it here.
+        parsed.setCategory(ExpenseCategories.toListed(parsed.getCategory()));
+        return parsed;
     }
 
 
