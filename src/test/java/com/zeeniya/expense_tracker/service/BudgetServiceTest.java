@@ -7,6 +7,7 @@ import com.zeeniya.expense_tracker.entity.AlertType;
 import com.zeeniya.expense_tracker.entity.Budget;
 import com.zeeniya.expense_tracker.entity.Role;
 import com.zeeniya.expense_tracker.entity.User;
+import com.zeeniya.expense_tracker.exception.DuplicateResourceException;
 import com.zeeniya.expense_tracker.exception.ResourceNotFoundException;
 import com.zeeniya.expense_tracker.repository.BudgetAlertRepository;
 import com.zeeniya.expense_tracker.repository.BudgetRepository;
@@ -75,7 +76,7 @@ class BudgetServiceTest {
         when(budgetRepository.findByMonthAndUserId(request.getMonth(), currentUser.getId())).thenReturn(Optional.of(existingBudget));
 
         assertThatThrownBy(() -> budgetService.setBudget(request, currentUser))
-                .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(DuplicateResourceException.class);
 
         verify(budgetRepository, never()).save(any(Budget.class));
     }

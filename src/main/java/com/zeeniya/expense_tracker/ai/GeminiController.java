@@ -8,6 +8,7 @@ import com.zeeniya.expense_tracker.entity.Expense;
 import com.zeeniya.expense_tracker.entity.User;
 import com.zeeniya.expense_tracker.service.BudgetAlertService;
 
+import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,7 @@ public class GeminiController {
 
     @PostMapping("/api/expenses/parse")
     public ExpenseResponse parseAndSave(
-            @RequestBody ExpenseParseRequest request,
+            @Valid @RequestBody ExpenseParseRequest request,
             @AuthenticationPrincipal User currentUser) {
 
         Expense saved = geminiService.parseAndSaveExpense(request.getUserInput(), currentUser);
@@ -34,7 +35,7 @@ public class GeminiController {
 
     // Same parsing as /parse, but nothing is saved.
     @PostMapping("/api/expenses/parse/preview")
-    public ExpenseParseResponse previewParse(@RequestBody ExpenseParseRequest request) {
+    public ExpenseParseResponse previewParse(@Valid @RequestBody ExpenseParseRequest request) {
         return geminiService.previewExpense(request.getUserInput());
     }
 

@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -41,9 +43,9 @@ public class AuthController {
 
     // Same answer for known and unknown emails.
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request){
+    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request){
         passwordResetService.requestReset(request.getEmail());
-        return ResponseEntity.ok("If an account exists for this email, a reset link has been sent.");
+        return ResponseEntity.ok(Map.of("message", "If an account exists for this email, a reset link has been sent."));
     }
 
     @PostMapping("/reset-password")

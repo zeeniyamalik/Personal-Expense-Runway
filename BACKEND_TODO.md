@@ -72,10 +72,10 @@ Status key: [ ] not started
 
 ## 6. Smaller things
 
-- [ ] Plain-text errors vs JSON field errors. Consider one JSON error shape `{message, fieldErrors}` for every error.
+- [x] One JSON error shape for every error: `{message}`, plus `fieldErrors` `{field: message}` for form validation (then `message` is the first field error). Also the 401s from the security filter, broken JSON bodies (400 instead of 500), wrong HTTP method (405), and the forgot-password success answer (`{message}`). A duplicate budget is now 409, like a taken username. Checked every case with curl.
 - [x] Gemini model name `gemini-3.8-flash` exists: Google answers 503 "high demand" for it, not 404.
-- [ ] Missing `@Valid` or length limit on `ExpenseParseRequest.userInput` (empty or very long input).
-- [ ] `ExpenseRequest.note` has no length limit.
+- [x] `ExpenseParseRequest.userInput`: required, max 300 characters, checked before Gemini is called (`@Valid` on `/parse` and `/parse/preview`).
+- [x] `ExpenseRequest.note`: max 255 characters (the database column size). Before, a longer note failed with a database error.
 
 ## 7. After the backend is done (before posting the project)
 

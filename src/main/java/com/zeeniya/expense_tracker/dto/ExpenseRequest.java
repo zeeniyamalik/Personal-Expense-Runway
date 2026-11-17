@@ -16,6 +16,8 @@ public class ExpenseRequest {
     @NotNull(message = "Date is required")
     private LocalDate date;
 
+    // the database column holds 255 characters
+    @Size(max = 255, message = "Note must be 255 characters or less.")
     private String note;
 
     public ExpenseRequest() {}
