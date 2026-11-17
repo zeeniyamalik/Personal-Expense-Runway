@@ -23,13 +23,12 @@ public class ExpenseController {
    private final ExpenseService expenseService;
    private final BudgetAlertService budgetAlertService;
 
-    // After every change to an expense, the alert check runs again for this user.
+    // alerts are re-checked after every expense change
     public ExpenseController(ExpenseService expenseService, BudgetAlertService budgetAlertService) {
         this.expenseService = expenseService;
         this.budgetAlertService = budgetAlertService;
     }
 
-    // Optional filters, for example /api/expenses?category=Food&from=2026-11-01&to=2026-11-30
     @GetMapping
     public List<ExpenseResponse> getAllExpenses(@RequestParam(required = false) String category,
                                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
@@ -69,7 +68,7 @@ public class ExpenseController {
 
 
     @GetMapping("/summary/category")
-    // Optional month, for example /api/expenses/summary/category?month=2026-11
+
     public List<CategorySummary> getCategorySummary(@RequestParam(required = false) YearMonth month,
                                                     @AuthenticationPrincipal User currentUser) {
             return expenseService.getCategorySummary(currentUser, month);

@@ -31,9 +31,6 @@ public class BudgetAlertService {
         this.userRepository = userRepository;
     }
 
-    // Runs once a day at 8am. The check also runs whenever the user changes an expense or
-    // a budget (called from the controllers), so the daily run catches the pace changing
-    // simply because days pass.
     @Scheduled(cron = "0 0 8 * * *")          //scheduled method calling normal method
     public void checkBurnRateAndCreateAlertsForAllUsers() {
         List<User> allUsers = userRepository.findAll();
@@ -42,12 +39,9 @@ public class BudgetAlertService {
         }
     }
 
-    // Rules:
-    // - Over budget: at most one alert per month. If the pace drops back under the budget,
-    //   the active alert is removed.
-    // - Unusual expense: one alert per expense. If the expense is deleted or no longer
-    //   unusual, its active alert is removed.
-    // A dismissed alert is never created again, but it does not block other alerts.
+    // over budget: one per month, removed if the pace drops back under the budget
+    // unusual expense: one per expense, removed if it's deleted or no longer unusual
+    // a dismissed alert is never created again
     public void checkBurnRateAndCreateAlert(User currentUser) {
         YearMonth currentMonth = YearMonth.now();
         Long userId = currentUser.getId();

@@ -13,8 +13,7 @@ public interface BudgetAlertRepository extends JpaRepository<BudgetAlert, Long> 
     void deleteByMonthAndTypeAndUserId(YearMonth month, AlertType type, Long userId);
     List<BudgetAlert> findByMonthAndDismissedFalseAndUserId(YearMonth month, Long userId);
 
-    // Used to avoid creating the same alert twice. Dismissed alerts count too,
-    // so dismissing an alert does not make it come straight back.
+    // dismissed alerts count too, so they don't come back
     boolean existsByMonthAndTypeAndUserId(YearMonth month, AlertType type, Long userId);
     boolean existsByTypeAndExpenseIdAndUserId(AlertType type, Long expenseId, Long userId);
 }

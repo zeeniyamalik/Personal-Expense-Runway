@@ -34,7 +34,7 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    // When the alert check last ran for this user ("Last checked" on the Alerts screen).
+    // "Last checked" on the Alerts screen
     @JsonIgnore
     private LocalDateTime alertsCheckedAt;
 

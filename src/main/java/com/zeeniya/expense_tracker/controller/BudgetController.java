@@ -21,7 +21,7 @@ public class BudgetController {
     private final BudgetService budgetService;
     private final BudgetAlertService budgetAlertService;
 
-    // After every change to a budget, the alert check runs again for this user.
+    // alerts are re-checked after every budget change
     public BudgetController(BudgetService budgetService, BudgetAlertService budgetAlertService) {
         this.budgetService = budgetService;
         this.budgetAlertService = budgetAlertService;
@@ -34,7 +34,6 @@ public class BudgetController {
         return BudgetResponse.from(saved);
     }
 
-    // Spring picks an exact path over /{month}, so "history" is never read as a month.
     @GetMapping("/history")
     public List<BudgetHistoryItem> getBudgetHistory(@AuthenticationPrincipal User currentUser) {
         return budgetService.getBudgetHistory(currentUser);

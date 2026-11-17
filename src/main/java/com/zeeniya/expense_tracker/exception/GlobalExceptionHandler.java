@@ -19,7 +19,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-// Every error is sent as {message} or {message, fieldErrors}.
+// every error is {message} or {message, fieldErrors}
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -30,7 +30,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(new ErrorResponse(message));
     }
 
-    // message is the first field error, so a screen without per-field errors can still show it
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex){
         Map<String, String> errors = new LinkedHashMap<>();
@@ -63,7 +62,7 @@ public class GlobalExceptionHandler {
         return error(HttpStatus.BAD_REQUEST, "Invalid value for \"" + ex.getName() + "\": " + ex.getValue());
     }
 
-    // missing body, broken JSON, or a value of the wrong type (e.g. "month": "nov")
+    // missing or broken JSON, or a wrong type like "month": "nov"
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleUnreadableBody(HttpMessageNotReadableException ex) {
         return error(HttpStatus.BAD_REQUEST, "The request body is missing or not valid.");
@@ -100,8 +99,7 @@ public class GlobalExceptionHandler {
         return error(HttpStatus.UNAUTHORIZED, "Invalid email or password.");
     }
 
-    // Database refused a duplicate. The message stays general because this handler
-    // cannot tell which table it came from (user, budget or alert).
+    // can't tell which table refused it, so the message stays general
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDuplicate(DataIntegrityViolationException ex) {
         log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());

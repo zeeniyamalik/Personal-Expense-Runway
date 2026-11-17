@@ -96,7 +96,7 @@ Backend items for each are in BACKEND_TODO.md.
 
 - Signup goes straight to Welcome. "Set account" and "Set password" frames stay unused.
 - AI category outside the Figma list: map it to the closest listed category, else "Other" (done on the server).
-- Forecast stays a 3-month table.
+- Forecast stays a 3-month table. Each category shows the average of the last 3 full months for all 3 coming months ("If your habits stay the same"), so the numbers are equal across the row, unlike the sample numbers in the Figma frame (decided 2026-11-18). Shown only after 3 full months.
 - Search expenses: the search box filters the loaded list in the browser (note, category, date). The backend filters only by category and date range (decided 2026-11-17/18).
 - Alerts: dismiss has no Undo.
 - Amounts: 1 crore (Rs. 10,000,000) maximum for budgets and single expenses.

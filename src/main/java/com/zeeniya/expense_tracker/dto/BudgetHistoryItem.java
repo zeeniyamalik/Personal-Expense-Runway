@@ -6,9 +6,7 @@ import java.text.DecimalFormatSymbols;
 import java.time.YearMonth;
 import java.util.Locale;
 
-// One past month on the Budget history screen.
-// difference = budget - spent: positive means money left over, negative means overspent.
-// overspent and message say the same thing in a form the screen can show directly.
+// one past month on the budget history screen, difference < 0 means overspent
 public class BudgetHistoryItem {
     private final YearMonth month;
     private final BigDecimal budget;
@@ -24,7 +22,7 @@ public class BudgetHistoryItem {
         this.difference = budget.subtract(spent);
         this.overspent = difference.signum() < 0;
 
-        // Same wording as the Budget history frame in Figma
+        // same wording as the Figma frame
         if (overspent) {
             this.message = "Over budget · Rs. " + formatAmount(difference.negate()) + " extra";
         } else {

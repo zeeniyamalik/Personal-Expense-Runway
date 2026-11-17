@@ -195,7 +195,7 @@ body {
 .field__error:empty,
 .form__error:empty { display: none; }
 
-/* live password rules: each line turns on when it is met */
+/* password rules checklist */
 .checklist {
   display: flex;
   flex-wrap: wrap;
@@ -256,7 +256,7 @@ body {
 .btn:hover  { box-shadow: 0 6px 22px rgba(252, 154, 208, 0.35); }
 .btn:disabled { opacity: 0.7; cursor: progress; }
 
-/* links that look like the button ("Back to log in") */
+/* links styled as the button */
 .card a.btn {
   display: inline-flex;
   align-items: center;

@@ -24,7 +24,6 @@ public class AvoidItem {
         this.reason = reason;
     }
 
-    // Always "low", "medium" or "high". Anything else the AI sends counts as medium.
     public String getSeverity() {
         if (severity == null) {
             return "medium";
@@ -40,7 +39,7 @@ public class AvoidItem {
         this.severity = severity;
     }
 
-    // The text shown on the insights card, same wording as the Figma design.
+    // label wording from the Figma design
     public String getPriorityLabel() {
         return switch (getSeverity()) {
             case "low" -> "Low priority";

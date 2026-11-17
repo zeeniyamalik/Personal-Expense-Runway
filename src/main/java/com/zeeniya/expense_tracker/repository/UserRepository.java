@@ -19,7 +19,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByUsernameIgnoreCaseAndIdNot(String username, Long id);
 
-    // Updates only this one column, so the rest of the user row is never overwritten.
+    // updates just this column
     @Transactional
     @Modifying
     @Query("update User u set u.alertsCheckedAt = :checkedAt where u.id = :userId")

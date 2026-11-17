@@ -41,11 +41,11 @@ public class PasswordResetService {
         this.frontendBaseUrl = frontendBaseUrl;
     }
 
-    // Does nothing visible when the email is unknown, so the caller cannot tell which emails have accounts.
+    // silent for unknown emails, so nobody can check who has an account
     @Transactional
     public void requestReset(String email) {
         userRepository.findByEmail(email).ifPresent(user -> {
-            // Only the newest link works.
+            // only the newest link works.
             tokenRepository.findByUserIdAndUsedFalse(user.getId()).forEach(old -> old.setUsed(true));
 
             String token = newToken();

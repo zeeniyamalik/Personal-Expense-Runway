@@ -57,8 +57,7 @@ public class BudgetService {
         return budgetRepository.findByUserId(currentUser.getId());
     }
 
-    // The over-budget alert was based on the old amount, so it is removed (even if dismissed).
-    // The next alert check decides again with the new amount.
+    // the over-budget alert was for the old amount, so the next check decides again
     @Transactional
     public Budget updateBudget(YearMonth month, BudgetRequest request, User currentUser) {
         Budget existingBudget = getBudget(month, currentUser);
@@ -68,8 +67,7 @@ public class BudgetService {
         return budgetRepository.save(existingBudget);
     }
 
-    // The over-budget alert was based on this budget, so it goes too.
-    // Unusual-expense alerts do not depend on the budget and stay.
+    // unusual-expense alerts stay, they don't depend on the budget
     @Transactional
     public void deleteBudget(YearMonth month, User currentUser) {
         Budget existingBudget = getBudget(month, currentUser);
@@ -78,8 +76,7 @@ public class BudgetService {
         budgetAlertRepository.deleteByMonthAndTypeAndUserId(month, AlertType.OVER_BUDGET, currentUser.getId());
     }
 
-    // Past months that had a budget, newest first, with what was actually spent.
-    // The current month is not included because it is not over yet.
+    // past months only, newest first
     public List<BudgetHistoryItem> getBudgetHistory(User currentUser) {
         YearMonth currentMonth = YearMonth.now();
 

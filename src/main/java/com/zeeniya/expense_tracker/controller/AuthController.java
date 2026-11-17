@@ -41,7 +41,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    // Same answer for known and unknown emails.
+    // same answer whether the email exists or not
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request){
         passwordResetService.requestReset(request.getEmail());

@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
-// Only a SHA-256 hash of the token is stored, so a leaked database cannot be used to reset passwords.
+// only the hash is stored, so a leaked database can't be used to reset passwords
 @Entity
 @Table(name = "password_reset_token")
 public class PasswordResetToken {

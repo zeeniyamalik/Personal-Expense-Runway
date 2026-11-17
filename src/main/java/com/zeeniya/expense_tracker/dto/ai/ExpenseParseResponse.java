@@ -8,10 +8,10 @@ public class ExpenseParseResponse {
     private String note;
     private boolean multipleDetected;
 
-    // set by the server, not the AI: the Review screen shows "We filed this under <category>."
+    // set by us, not the AI; drives the "We filed this under ..." note
     private boolean categoryChanged;
 
-    // Jackson needs an empty constructor to build this object from Gemini's JSON.
+    // for Jackson
     public ExpenseParseResponse() {}
 
     public ExpenseParseResponse(String category, double amount, String date, String note, boolean multipleDetected) {

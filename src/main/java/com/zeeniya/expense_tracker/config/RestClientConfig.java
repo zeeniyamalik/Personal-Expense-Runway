@@ -10,8 +10,6 @@ import java.time.Duration;
 @Configuration
 public class RestClientConfig {
 
-    // Without timeouts, a stalled call to Gemini would hang the request forever.
-    // When a timeout fires, GeminiService catches it and answers 503.
     @Bean
     public RestClient restClient(){
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();

@@ -28,7 +28,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-// The call to Gemini is replaced with a fixed answer, so these tests never use the network.
+// Gemini is stubbed, no network calls
 class GeminiServiceTest {
 
     private ExpenseService expenseService;
@@ -94,7 +94,7 @@ class GeminiServiceTest {
 
     @Test
     void insightsWhenAiIsUnavailable_throwSoTheApiAnswers503() {
-        // In this test there is no API key, so the call to Gemini fails like an outage would.
+        // no API key here, so Gemini fails like an outage
         User user = new User("user@example.com", "user", "Test User", "password", Role.USER);
         when(expenseService.getBurnRate(user)).thenReturn(new BurnRateWarning(BigDecimal.ZERO, BigDecimal.ZERO,
                 BigDecimal.ZERO, BigDecimal.ZERO, false, false, null, false, null));

@@ -13,8 +13,7 @@ public final class ExpenseCategories {
             "Food", "Travel", "Entertainment", "Shopping", "Medical", "Utilities", OTHER
     );
 
-    // Words the AI might use instead of a listed name. Checked in order with "contains",
-    // so "electricity bill" and "Bills" both end up in Utilities.
+    // checked in order with contains()
     private static final Map<String, String> KEYWORDS = new LinkedHashMap<>();
 
     static {
@@ -56,7 +55,7 @@ public final class ExpenseCategories {
     private ExpenseCategories() {
     }
 
-    // true when toListed() had to pick a different category (case differences don't count)
+    // true if the ai's category had to be replaced (case doesn't count)
     public static boolean isChanged(String category) {
         if (category == null || category.isBlank()) {
             return true;
@@ -64,8 +63,7 @@ public final class ExpenseCategories {
         return !toListed(category).equalsIgnoreCase(category.trim());
     }
 
-    // Returns the listed name for any text: an exact match (ignoring case), then a keyword
-    // match, and Other when nothing fits.
+    // exact name first, then keywords, else other
     public static String toListed(String category) {
         if (category == null || category.isBlank()) {
             return OTHER;

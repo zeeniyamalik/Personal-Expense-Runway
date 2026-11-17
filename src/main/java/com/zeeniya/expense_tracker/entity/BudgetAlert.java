@@ -12,18 +12,15 @@ public class BudgetAlert {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // The column in MySQL is "alert_month". The old @JoinColumn (meant for relations)
-    // set that name; @Column is the right annotation for a plain value and keeps the name.
-    // No "unique": a month can have several alerts.
+    // not unique: a month can have several alerts
     @Column(name = "alert_month")
     private YearMonth month;
 
-    // Stored as text ("OVER_BUDGET"), so adding a new type later does not shift old rows.
-    // Alerts created before types existed have no type.
+    // older alerts have no type
     @Enumerated(EnumType.STRING)
     private AlertType type;
 
-    // Only for UNUSUAL_EXPENSE: the expense the "View expense" button opens.
+    // only for UNUSUAL_EXPENSE
     private Long expenseId;
 
     private String message;

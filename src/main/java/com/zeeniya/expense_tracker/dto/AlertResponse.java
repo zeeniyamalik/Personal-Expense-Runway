@@ -6,7 +6,7 @@ import com.zeeniya.expense_tracker.entity.BudgetAlert;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 
-// What the API sends back for an alert, without the user object.
+// what the API sends back for alert, without the user object.
 public class AlertResponse {
     private Long id;
     private AlertType type;

@@ -44,7 +44,7 @@
 
     const saved = getUser();
     if (saved) showUser(saved);
-    // also checks that the saved token still works (a 401 goes back to login)
+    // also catches an expired token
     api('/users/me').then(showUser).catch(() => {});
 
     document.getElementById('logout').addEventListener('click', () => {

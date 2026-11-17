@@ -24,7 +24,7 @@ public class SmtpEmailSender implements EmailSender {
         this.from = from;
     }
 
-    // a failed send is only logged: an error here would tell the caller the email has an account
+    // only logged: an error here would reveal that the email has an account
     @Override
     public void send(String to, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();

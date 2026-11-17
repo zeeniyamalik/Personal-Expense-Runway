@@ -1,4 +1,4 @@
-// Shared by every page: the login token and calls to the backend.
+// token storage and API calls, shared by every page
 
 const TOKEN_KEY = 'runway.token';
 const USER_KEY = 'runway.user';
@@ -25,13 +25,12 @@ function clearSession() {
   localStorage.removeItem(USER_KEY);
 }
 
-// Pages that need a logged-in user call this first.
+// call this first on pages that need a login
 function requireLogin() {
   if (!getToken()) location.replace('auth.html');
 }
 
-// Calls /api + path. Returns the JSON answer, or throws { status, message, fieldErrors }.
-// The backend sends every error as { message, fieldErrors? }.
+// returns the JSON answer, or throws { status, message, fieldErrors }
 async function api(path, { method = 'GET', body } = {}) {
   const isAuthCall = path.startsWith('/auth/');
   const headers = {};
@@ -60,7 +59,7 @@ async function api(path, { method = 'GET', body } = {}) {
 
   if (response.ok) return data;
 
-  // the saved token stopped working (expired or invalid): back to login with a notice
+  // token expired or invalid: back to login
   if (response.status === 401 && !isAuthCall) {
     clearSession();
     location.replace('auth.html?session=expired');

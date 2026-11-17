@@ -5,8 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-// Development stand-in: prints the email in the console instead of sending it.
-// The body holds a live reset link, so this must not be the sender in production.
+// development only: prints the email, including a live reset link, to the console
 @Component
 @ConditionalOnProperty(name = "app.mail.sender", havingValue = "log", matchIfMissing = true)
 public class LoggingEmailSender implements EmailSender {

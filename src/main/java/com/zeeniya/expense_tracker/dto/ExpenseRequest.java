@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class ExpenseRequest {
-    // 1 crore, for expenses and budgets
+
     public static final String MAX_AMOUNT = "10000000";
     public static final String MAX_AMOUNT_MESSAGE = "Amount can't be more than Rs. 10,000,000 (1 crore).";
 
@@ -21,7 +21,7 @@ public class ExpenseRequest {
     @NotNull(message = "Date is required")
     private LocalDate date;
 
-    // the database column holds 255 characters
+    // database column is varchar(255)
     @Size(max = 255, message = "Note must be 255 characters or less.")
     private String note;
 

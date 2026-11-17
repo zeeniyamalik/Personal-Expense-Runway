@@ -33,7 +33,6 @@ public class GeminiController {
         return ExpenseResponse.from(saved);
     }
 
-    // Same parsing as /parse, but nothing is saved.
     @PostMapping("/api/expenses/parse/preview")
     public ExpenseParseResponse previewParse(@Valid @RequestBody ExpenseParseRequest request) {
         return geminiService.previewExpense(request.getUserInput());

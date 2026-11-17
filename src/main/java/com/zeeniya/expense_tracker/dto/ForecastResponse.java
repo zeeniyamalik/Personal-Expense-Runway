@@ -2,8 +2,7 @@ package com.zeeniya.expense_tracker.dto;
 
 import java.util.List;
 
-// completedMonths and monthsNeeded let the screen explain an empty forecast,
-// for example "Forecast unlocks after 3 full months, you have 1 so far".
+// when forecasts is empty, the screen can say "1 of 3 months so far"
 public class ForecastResponse {
     private final int completedMonths;
     private final int monthsNeeded;

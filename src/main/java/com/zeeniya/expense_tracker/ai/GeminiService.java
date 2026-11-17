@@ -54,9 +54,7 @@ public class GeminiService {
               It can distort the daily average, so mention it separately from categories.
             """;
 
-    // Reads gemini.api.key from application.properties, falls back to the GEMINI_API_KEY
-    // environment variable, and finally to empty. Empty no longer stops the app from starting:
-    // the AI features answer 503 and the rest of the app keeps working.
+    // an empty key doesn't stop the app, the AI endpoints just answer 503
     @Value("${gemini.api.key:${GEMINI_API_KEY:}}")
     private String apiKey;
 
@@ -70,7 +68,7 @@ public class GeminiService {
         this.expenseService = expenseService;
     }
 
-    // Expense parsing
+    // expense parsing
 
     public ExpenseParseResponse parseExpense(String userInput) {
         String prompt = """
@@ -146,14 +144,14 @@ public class GeminiService {
             throw new RuntimeException("Failed to parse Gemini response into ExpenseParseResponse", e);
         }
 
-        // The AI may still answer with a name outside the list, so map it here.
+        // the ai can still answer with a category off the list
         parsed.setCategoryChanged(ExpenseCategories.isChanged(parsed.getCategory()));
         parsed.setCategory(ExpenseCategories.toListed(parsed.getCategory()));
         return parsed;
     }
 
 
-    // Spending insights
+    // spending insights
 
     public InsightResponse getSpendingInsights(User currentUser) {
         BurnRateWarning burnRate = expenseService.getBurnRate(currentUser);
@@ -194,7 +192,7 @@ public class GeminiService {
         if (forecast.getForecasts().isEmpty()) {
             data.append("Not available yet (needs at least 3 months of history).\n");
         }
-        // every forecast month has the same value, so next month is enough for the AI
+        // all 3 forecast months are the same, so one is enough
         for (CategoryForecast f : forecast.getForecasts()) {
             data.append(f.getCategory()).append(": ").append(f.getMonths().get(0).getForecast()).append("\n");
         }
@@ -258,7 +256,6 @@ public class GeminiService {
                         "responseSchema", schema
                 )
         );
-        // If Gemini is down, callGemini throws AiUnavailableException, which becomes a 503.
         String rawJson = callGemini(requestBody);
         InsightResponse insights;
         try {
@@ -273,7 +270,7 @@ public class GeminiService {
         return insights;
     }
 
-    // Helpers
+
 
     private String callGemini(Map<String, Object> requestBody) {
         if (apiKey == null || apiKey.isBlank()) {
@@ -298,13 +295,11 @@ public class GeminiService {
             log.warn("Gemini unavailable: {}", e.getMessage());
             throw new AiUnavailableException("AI service is busy right now, try again shortly, or add this expense manually.");
         } catch (HttpClientErrorException e) {
-            // Bad key, wrong model name or a rejected request. This is our setup, not the user's
-            // input, so the user gets the same "unavailable" answer and the details go to the log.
+            // bad key or model name: our setup, not the user's input, so log the details
             log.error("Gemini rejected the request: {} {}", e.getStatusCode(), e.getResponseBodyAsString());
             throw new AiUnavailableException("AI service is not available right now. You can add this expense manually.");
         } catch (RestClientException e) {
-            // Anything else that goes wrong while reading the answer, for example a timeout
-            // after the response has started.
+            // e.g. a timeout halfway through the answer
             log.warn("Gemini response could not be read: {}", e.getMessage());
             throw new AiUnavailableException("AI service is busy right now, try again shortly, or add this expense manually.");
         }
@@ -329,8 +324,7 @@ public class GeminiService {
         return response;
     }
 
-    // Parses the text and runs the checks, but saves nothing. The Review screen shows this
-    // result, and the user saves it afterwards with POST /api/expenses.
+    // for the review screen: parse and check, nothing is saved
     public ExpenseParseResponse previewExpense(String userInput) {
         ExpenseParseResponse parsed = parseExpense(userInput);
 

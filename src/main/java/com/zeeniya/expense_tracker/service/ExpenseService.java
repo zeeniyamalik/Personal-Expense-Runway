@@ -34,8 +34,7 @@ public class ExpenseService {
         return expenseRepository.findByUserId(currentUser.getId());
     }
 
-    // History list with optional filters. Any filter left as null is ignored, and the
-    // result is sorted newest first.
+    // null filters are ignored, newest first
     public List<Expense> getExpenses(User currentUser, String category, LocalDate from, LocalDate to) {
         if (from != null && to != null && from.isAfter(to)) {
             throw new IllegalArgumentException("\"from\" date must be on or before the \"to\" date.");
@@ -90,8 +89,7 @@ public class ExpenseService {
     //CRUD Operations end
 
     //CATEGORY SUMMARY FEATURE
-    // month is optional: null means all expenses ever, otherwise only that month.
-    // Sorted biggest first, so the first item is the category that "leads".
+    // month null = all time; biggest first, so the first one "leads"
     public List<CategorySummary> getCategorySummary(User currentUser, YearMonth month) {
         List<CategorySummary> categorySummary = new ArrayList<>();
         List<Expense> expenses = expenseRepository.findByUserId(currentUser.getId());
@@ -174,7 +172,7 @@ public class ExpenseService {
             requiredDailyAverage = remainingBudget.divide(BigDecimal.valueOf(remainingDays), 2, RoundingMode.HALF_UP);
         }
 
-        // Anomaly detection: the burn rate only mentions the first unusual expense
+        // the burn rate only mentions the first one
         List<UnusualExpense> unusualExpenses = findUnusualExpenses(expenses, thisMonthExpenses);
         boolean hasAnomaly = !unusualExpenses.isEmpty();
         String anomalyMessage = hasAnomaly ? unusualExpenses.get(0).getMessage() : null;
@@ -192,7 +190,7 @@ public class ExpenseService {
         );
     }
     //FORECAST FEATURE
-    // Every expense this month that is more than 3 times the user's average expense.
+    // this month's expenses over 3x the user's average
     public List<UnusualExpense> getUnusualExpenses(User currentUser) {
         List<Expense> expenses = expenseRepository.findByUserId(currentUser.getId());
         YearMonth currentMonth = YearMonth.now();
@@ -204,7 +202,7 @@ public class ExpenseService {
 
     private List<UnusualExpense> findUnusualExpenses(List<Expense> allExpenses, List<Expense> thisMonthExpenses) {
         List<UnusualExpense> unusual = new ArrayList<>();
-        // with fewer than 3 expenses there is no "usual" to compare against
+        // too few expenses to know what is usual
         if (allExpenses.size() < 3) {
             return unusual;
         }
@@ -225,17 +223,14 @@ public class ExpenseService {
         return unusual;
     }
 
-    // The forecast for each category is the average of the last 3 full months. A month with
-    // no spending in that category counts as 0. The same average is used for each of the
-    // next 3 months.
+    // average of the last 3 full months (a month without spending counts as 0)
     public static final int FORECAST_MONTHS_NEEDED = 3;
 
     public ForecastResponse getForecast(User currentUser) {
         List<Expense> expenses = expenseRepository.findByUserId(currentUser.getId());
         YearMonth currentMonth = YearMonth.now();
 
-        // Full months of history: from the month of the first expense up to last month.
-        // The current month is still running, so it does not count.
+        // full months since the first expense; the current month doesn't count
         int completedMonths = 0;
         Optional<YearMonth> firstMonth = expenses.stream()
                 .map(e -> YearMonth.from(e.getDate()))
@@ -249,7 +244,6 @@ public class ExpenseService {
             return new ForecastResponse(completedMonths, FORECAST_MONTHS_NEEDED, forecasts);
         }
 
-        // Total per category over the last 3 full months only.
         YearMonth firstCounted = currentMonth.minusMonths(FORECAST_MONTHS_NEEDED);
         Map<String, BigDecimal> categoryTotals = new HashMap<>();
         for (Expense expense : expenses) {

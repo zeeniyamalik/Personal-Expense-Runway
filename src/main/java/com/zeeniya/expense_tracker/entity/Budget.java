@@ -6,8 +6,7 @@ import java.math.BigDecimal;
 import java.time.YearMonth;
 
 @Entity
-// One budget per month PER USER. The old "unique = true" on the column meant
-// one budget per month for the whole app, so a second user could not set October.
+
 @Table(uniqueConstraints = @UniqueConstraint(name = "uk_budget_user_month", columnNames = {"user_id", "budget_month"}))
 public class Budget {
 

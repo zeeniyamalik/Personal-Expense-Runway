@@ -3,8 +3,7 @@ package com.zeeniya.expense_tracker.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// The Alerts screen: the active alerts plus when they were last checked
-// (null if the check has never run for this user).
+// the active alerts plus when they were last checked
 public class AlertsResponse {
     private final LocalDateTime lastChecked;
     private final List<AlertResponse> alerts;

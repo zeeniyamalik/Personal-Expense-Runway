@@ -1,4 +1,4 @@
-// The hash decides the view: auth.html = login, #signup, #forgot, #sent, #reset, #done, #expired.
+// the hash picks the view: #signup, #forgot, #sent, #reset, #done, #expired, otherwise login
 const screen = document.querySelector('.screen');
 const DURATION = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 900;
 
@@ -61,8 +61,7 @@ function morphTo(shape) {
 const banner = document.getElementById('session-banner');
 const params = new URLSearchParams(location.search);
 
-// The email link is auth.html?reset=TOKEN. The token is kept for this tab only and
-// removed from the address bar, so it does not stay in the browser history.
+// reset link: keep the token for this tab and drop it from the address bar
 if (params.has('reset')) {
   sessionStorage.setItem('runway.resetToken', params.get('reset'));
   history.replaceState(null, '', 'auth.html#reset');
@@ -119,7 +118,7 @@ function setFormError(form, message) {
   form.querySelector('.form__error').textContent = message;
 }
 
-// Shows the backend's field errors under their fields, otherwise the general message.
+// field errors under their fields, otherwise the general message
 function showServerError(form, error) {
   let shown = false;
   for (const [name, message] of Object.entries(error.fieldErrors || {})) {
@@ -128,7 +127,7 @@ function showServerError(form, error) {
   if (!shown) setFormError(form, error.message);
 }
 
-// Disables the button while the request runs, so it is not sent twice.
+// disabled while sending, so it can't be sent twice
 async function submitWith(form, work) {
   const button = form.querySelector('button[type="submit"]');
   const label = button.textContent;
@@ -144,7 +143,7 @@ async function submitWith(form, work) {
   }
 }
 
-// Returns true when every check passed; otherwise shows the first problem per field.
+// shows the first problem per field
 function check(form, checks) {
   let ok = true;
   for (const [name, test, message] of checks) {
@@ -158,7 +157,6 @@ function check(form, checks) {
   return ok;
 }
 
-// Live password checklist under the password fields.
 document.querySelectorAll('[data-rules-for]').forEach((list) => {
   const input = document.getElementById(list.dataset.rulesFor);
   input.addEventListener('input', () => {
@@ -222,7 +220,7 @@ signupForm.addEventListener('submit', (event) => {
       saveSession(auth);
       location.replace('home.html');
     } catch (error) {
-      // 409: the email or the username is already taken; show it under that field
+      // 409: email or username taken
       if (error.status === 409) {
         setFieldError(signupForm, /username/i.test(error.message) ? 'username' : 'email', error.message);
         return;
