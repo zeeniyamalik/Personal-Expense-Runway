@@ -5,7 +5,7 @@ target/
 !**/src/test/**/target/
 
 ### Secrets (never commit) ###
-src/main/resources/application.properties
+# real values live in .env; .env.example lists the names
 .env
 
 ### IntelliJ IDEA ###
