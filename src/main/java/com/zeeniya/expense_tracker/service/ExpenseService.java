@@ -33,6 +33,21 @@ public class ExpenseService {
         return expenseRepository.findByUserId(currentUser.getId());
     }
 
+    // History list with optional filters. Any filter left as null is ignored, and the
+    // result is sorted newest first.
+    public List<Expense> getExpenses(User currentUser, String category, LocalDate from, LocalDate to) {
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new IllegalArgumentException("\"from\" date must be on or before the \"to\" date.");
+        }
+        return expenseRepository.findByUserId(currentUser.getId())
+                .stream()
+                .filter(e -> category == null || category.isBlank() || e.getCategory().equalsIgnoreCase(category.trim()))
+                .filter(e -> from == null || !e.getDate().isBefore(from))
+                .filter(e -> to == null || !e.getDate().isAfter(to))
+                .sorted(Comparator.comparing(Expense::getDate).thenComparing(Expense::getId).reversed())
+                .toList();
+    }
+
     public Expense getExpenseById(Long id, User currentUser) {
         return expenseRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Expense not found with ID " + id));

@@ -70,6 +70,58 @@ class ExpenseServiceTest {
         verify(expenseRepository).findByUserId(currentUser.getId());
     }
 
+    private Expense expenseOn(long id, String category, String date) {
+        Expense expense = new Expense(category, new BigDecimal("100.00"), LocalDate.parse(date), "");
+        expense.setId(id);
+        expense.setUser(currentUser);
+        return expense;
+    }
+
+    @Test
+    void getExpenses_withoutFilters_returnsAllNewestFirst() {
+        when(expenseRepository.findByUserId(currentUser.getId())).thenReturn(List.of(
+                expenseOn(1, "Food", "2026-10-05"),
+                expenseOn(2, "Travel", "2026-11-10"),
+                expenseOn(3, "Food", "2026-11-10")));
+
+        List<Expense> result = expenseService.getExpenses(currentUser, null, null, null);
+
+        assertThat(result).extracting(Expense::getId).containsExactly(3L, 2L, 1L);
+    }
+
+    @Test
+    void getExpenses_filtersByCategoryIgnoringCase() {
+        when(expenseRepository.findByUserId(currentUser.getId())).thenReturn(List.of(
+                expenseOn(1, "Food", "2026-10-05"),
+                expenseOn(2, "Travel", "2026-11-10")));
+
+        List<Expense> result = expenseService.getExpenses(currentUser, "food", null, null);
+
+        assertThat(result).extracting(Expense::getId).containsExactly(1L);
+    }
+
+    @Test
+    void getExpenses_filtersByDateRange_includingBothEnds() {
+        when(expenseRepository.findByUserId(currentUser.getId())).thenReturn(List.of(
+                expenseOn(1, "Food", "2026-10-31"),
+                expenseOn(2, "Food", "2026-11-01"),
+                expenseOn(3, "Food", "2026-11-30"),
+                expenseOn(4, "Food", "2026-12-01")));
+
+        List<Expense> result = expenseService.getExpenses(currentUser, null,
+                LocalDate.parse("2026-11-01"), LocalDate.parse("2026-11-30"));
+
+        assertThat(result).extracting(Expense::getId).containsExactly(3L, 2L);
+    }
+
+    @Test
+    void getExpenses_rejectsFromAfterTo() {
+        assertThatThrownBy(() -> expenseService.getExpenses(currentUser, null,
+                LocalDate.parse("2026-12-01"), LocalDate.parse("2026-11-01")))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(expenseRepository, never()).findByUserId(any());
+    }
+
     @Test
     void getExpenseById_returnsExpense_ifFound(){
         Expense expense = new Expense("Food", new BigDecimal("500.00"), LocalDate.now(), "");

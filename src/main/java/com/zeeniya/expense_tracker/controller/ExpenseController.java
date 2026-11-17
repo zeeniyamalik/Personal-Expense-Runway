@@ -5,10 +5,12 @@ import com.zeeniya.expense_tracker.dto.*;
 import com.zeeniya.expense_tracker.entity.Expense;
 import com.zeeniya.expense_tracker.entity.User;
 import com.zeeniya.expense_tracker.service.ExpenseService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -22,9 +24,13 @@ public class ExpenseController {
         this.expenseService = expenseService;
     }
 
+    // Optional filters, for example /api/expenses?category=Food&from=2026-11-01&to=2026-11-30
     @GetMapping
-    public List<ExpenseResponse> getAllExpenses(@AuthenticationPrincipal User currentUser){
-        return expenseService.getAllExpenses(currentUser)
+    public List<ExpenseResponse> getAllExpenses(@RequestParam(required = false) String category,
+                                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+                                                @AuthenticationPrincipal User currentUser){
+        return expenseService.getExpenses(currentUser, category, from, to)
                 .stream()
                 .map(ExpenseResponse::from)
                 .toList();
