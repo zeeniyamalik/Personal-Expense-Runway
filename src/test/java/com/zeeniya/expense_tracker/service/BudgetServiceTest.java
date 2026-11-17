@@ -206,11 +206,11 @@ class BudgetServiceTest {
         assertThat(result.get(0).getSpent()).isEqualByComparingTo("4500.00");
         assertThat(result.get(0).getDifference()).isEqualByComparingTo("-500.00");
         assertThat(result.get(0).isOverspent()).isTrue();
-        assertThat(result.get(0).getMessage()).isEqualTo("You overspent by Rs.500.00");
+        assertThat(result.get(0).getMessage()).isEqualTo("Over budget · Rs. 500 extra");
         // under budget: 5000 - 4200
         assertThat(result.get(1).getDifference()).isEqualByComparingTo("800.00");
         assertThat(result.get(1).isOverspent()).isFalse();
-        assertThat(result.get(1).getMessage()).isEqualTo("You stayed within budget, Rs.800.00 left over");
+        assertThat(result.get(1).getMessage()).isEqualTo("Within budget · Rs. 800 left");
         // no expenses that month
         assertThat(result.get(2).getSpent()).isEqualByComparingTo("0");
         assertThat(result.get(2).getDifference()).isEqualByComparingTo("3000.00");

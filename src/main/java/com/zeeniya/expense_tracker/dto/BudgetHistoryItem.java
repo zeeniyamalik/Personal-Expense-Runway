@@ -1,7 +1,10 @@
 package com.zeeniya.expense_tracker.dto;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.YearMonth;
+import java.util.Locale;
 
 // One past month on the Budget history screen.
 // difference = budget - spent: positive means money left over, negative means overspent.
@@ -21,13 +24,19 @@ public class BudgetHistoryItem {
         this.difference = budget.subtract(spent);
         this.overspent = difference.signum() < 0;
 
+        // Same wording as the Budget history frame in Figma
         if (overspent) {
-            this.message = "You overspent by Rs." + difference.negate().toPlainString();
-        } else if (difference.signum() == 0) {
-            this.message = "You spent exactly your budget";
+            this.message = "Over budget · Rs. " + formatAmount(difference.negate()) + " extra";
         } else {
-            this.message = "You stayed within budget, Rs." + difference.toPlainString() + " left over";
+            this.message = "Within budget · Rs. " + formatAmount(difference) + " left";
         }
+    }
+
+    // 1500.00 -> "1,500", 1500.50 -> "1,500.50"
+    private static String formatAmount(BigDecimal amount) {
+        boolean whole = amount.stripTrailingZeros().scale() <= 0;
+        String pattern = whole ? "#,##0" : "#,##0.00";
+        return new DecimalFormat(pattern, DecimalFormatSymbols.getInstance(Locale.US)).format(amount);
     }
 
     public YearMonth getMonth() { return month; }

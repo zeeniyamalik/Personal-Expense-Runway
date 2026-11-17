@@ -49,7 +49,7 @@ Status key: [ ] not started
 ## 3. Budgets
 
 - [x] Return DTOs, not the `Budget` entity (it leaks the whole `user` object). All budget endpoints now return `BudgetResponse` `{month, amount}`.
-- [x] **Budget history.** `GET /api/budgets/history` returns past months that had a budget, newest first, with `{month, budget, spent, difference}`. `difference` = budget - spent (negative means overspent), plus `overspent` (true/false) and a ready-to-show `message` ("You overspent by Rs.50.00" / "You stayed within budget, Rs.400.00 left over"). The current month is left out because it is not over.
+- [x] **Budget history.** `GET /api/budgets/history` returns past months that had a budget, newest first, with `{month, budget, spent, difference}`. `difference` = budget - spent (negative means overspent), plus `overspent` (true/false) and a ready-to-show `message` in the Figma wording ("Over budget · Rs. 1,500 extra" / "Within budget · Rs. 2,000 left"). The Budget history frame (2:208) already shows this, so no design gap. The current month is left out because it is not over.
 - [x] Deleting a budget also deletes that month's alert (`BudgetAlertRepository.deleteByMonthAndUserId`). Checked with curl and MySQL.
 - [x] **Decided: leave as is.** `budget.budget_month` and `budget_alert.alert_month` are stored as serialized Java objects (`varbinary`), not as text like `2026-11`. It does not affect the app or the UX; it only means the values cannot be read or filtered directly in MySQL. If that is ever needed: a JPA `AttributeConverter<YearMonth, String>` plus a one-off update of existing rows.
 
