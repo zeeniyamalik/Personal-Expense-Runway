@@ -37,7 +37,7 @@ Status key: [ ] not started
 ## 2. Expenses
 
 - [x] **Preview parse.** `POST /api/expenses/parse/preview` `{userInput}` returns `ExpenseParseResponse` and saves nothing. The Review screen then saves with `POST /api/expenses`. The old `/parse` is kept (it saves directly), and both use the same checks (`GeminiService.previewExpense`).
-  - [ ] **You:** not yet checked against a real Gemini answer. On 2026-11-16 Google returned 503 "high demand" for every call, so only the unit tests (`GeminiServiceTest`) and the 503 path were verified. Try it once from the frontend or curl when Gemini is back.
+  - [ ] **You:** not yet checked against a real Gemini answer. On 2026-11-16 Google returned 503 "high demand" for every call, so only the unit tests (`GeminiServiceTest`) and the 503 path were verified. Try it once from the frontend or curl when Gemini is back. Still overloaded on 2026-11-17 (503 and 60 s stalls), so the new category list is not checked against a real answer either.
 - [x] **Gemini timeouts.** `RestClientConfig` had no timeouts, so a stalled call hung forever. Now 5 s to connect and 20 s to read, and any read failure gives 503 (`RestClientException` catch in `GeminiService.callGemini`).
 - [x] **Categories.** Figma list: Food, Travel, Entertainment, Shopping, Medical, Utilities, Other. The Gemini prompt now uses this list (`ExpenseCategories.ALL`) and may not invent categories. Whatever the AI answers goes through `ExpenseCategories.toListed`: exact name (any case), then a keyword match ("Bills" to Utilities, "Groceries" to Food), else Other. Tested in `ExpenseCategoriesTest`. Old rows in the database are left as they are. Manual `POST /api/expenses` still accepts any category name.
 - [x] **History filters.** `GET /api/expenses?category=&from=YYYY-MM-DD&to=YYYY-MM-DD`, all optional, still a plain list (decision: no paging, no text search), sorted newest first. Category ignores case, both dates are included, `from` after `to` gives 400. Tested in `ExpenseServiceTest` and by curl.
@@ -67,13 +67,13 @@ Status key: [ ] not started
 
 ## 5. AI insights
 
-- [ ] `GET /api/ai/insights` must return 503 when Gemini is down. Today it returns 200 with an error sentence in `summary`.
-- [ ] `severity` is low/medium/high. Design shows "Low priority" and "Moderate priority". Map medium to Moderate or send a label.
+- [x] `GET /api/ai/insights` returns 503 with a message when Gemini is down or its answer cannot be read. With no expenses it still returns 200 with a summary that explains what is missing (not an error). Checked with curl on 2026-11-17 (Gemini was overloaded, the API answered 503).
+- [x] `severity` is always `low`/`medium`/`high` (anything else counts as medium), and each item has a `priorityLabel`: "Low priority", "Moderate priority", "High priority". The design only shows Low and Moderate; High follows the same pattern.
 
 ## 6. Smaller things
 
 - [ ] Plain-text errors vs JSON field errors. Consider one JSON error shape `{message, fieldErrors}` for every error.
-- [ ] Gemini model name `gemini-3.8-flash` in `GeminiService`: check it exists.
+- [x] Gemini model name `gemini-3.8-flash` exists: Google answers 503 "high demand" for it, not 404.
 - [ ] Missing `@Valid` or length limit on `ExpenseParseRequest.userInput` (empty or very long input).
 - [ ] `ExpenseRequest.note` has no length limit.
 

@@ -257,15 +257,19 @@ public class GeminiService {
                         "responseSchema", schema
                 )
         );
+        // If Gemini is down, callGemini throws AiUnavailableException, which becomes a 503.
+        String rawJson = callGemini(requestBody);
+        InsightResponse insights;
         try {
-            String rawJson = callGemini(requestBody);
-            return objectMapper.readValue(rawJson, InsightResponse.class);
-        } catch (AiUnavailableException e) {
-            return insightMessage(e.getMessage());
+            insights = objectMapper.readValue(rawJson, InsightResponse.class);
         } catch (Exception e) {
-            log.error("Insights failed", e);
-            return insightMessage("Could not generate insights right now. Please try again.");
+            log.error("Insights answer could not be read: {}", rawJson, e);
+            throw new AiUnavailableException("Could not generate insights right now. Please try again.");
         }
+        if (insights.getAvoid() == null) {
+            insights.setAvoid(new ArrayList<>());
+        }
+        return insights;
     }
 
     // Helpers
