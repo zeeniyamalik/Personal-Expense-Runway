@@ -1,7 +1,8 @@
 package com.zeeniya.expense_tracker.controller;
 
+import com.zeeniya.expense_tracker.dto.BudgetHistoryItem;
 import com.zeeniya.expense_tracker.dto.BudgetRequest;
-import com.zeeniya.expense_tracker.entity.Budget;
+import com.zeeniya.expense_tracker.dto.BudgetResponse;
 import com.zeeniya.expense_tracker.entity.User;
 import com.zeeniya.expense_tracker.service.BudgetService;
 import jakarta.validation.Valid;
@@ -22,23 +23,32 @@ public class BudgetController {
     }
 
     @PostMapping
-    public Budget setBudget(@Valid @RequestBody BudgetRequest request, @AuthenticationPrincipal User currentUser) {
-        return budgetService.setBudget(request, currentUser);
+    public BudgetResponse setBudget(@Valid @RequestBody BudgetRequest request, @AuthenticationPrincipal User currentUser) {
+        return BudgetResponse.from(budgetService.setBudget(request, currentUser));
+    }
+
+    // Spring picks an exact path over /{month}, so "history" is never read as a month.
+    @GetMapping("/history")
+    public List<BudgetHistoryItem> getBudgetHistory(@AuthenticationPrincipal User currentUser) {
+        return budgetService.getBudgetHistory(currentUser);
     }
 
     @GetMapping("/{month}")
-    public Budget getBudget(@PathVariable YearMonth month, @AuthenticationPrincipal User currentUser) {
-        return budgetService.getBudget(month, currentUser);
+    public BudgetResponse getBudget(@PathVariable YearMonth month, @AuthenticationPrincipal User currentUser) {
+        return BudgetResponse.from(budgetService.getBudget(month, currentUser));
     }
 
     @GetMapping
-    public List<Budget> getAllBudgets(@AuthenticationPrincipal User currentUser) {
-        return budgetService.getAllBudgets(currentUser);
+    public List<BudgetResponse> getAllBudgets(@AuthenticationPrincipal User currentUser) {
+        return budgetService.getAllBudgets(currentUser)
+                .stream()
+                .map(BudgetResponse::from)
+                .toList();
     }
 
     @PutMapping("/{month}")
-    public Budget updateBudget(@PathVariable YearMonth month, @Valid @RequestBody BudgetRequest request, @AuthenticationPrincipal User currentUser) {
-        return budgetService.updateBudget(month, request, currentUser);
+    public BudgetResponse updateBudget(@PathVariable YearMonth month, @Valid @RequestBody BudgetRequest request, @AuthenticationPrincipal User currentUser) {
+        return BudgetResponse.from(budgetService.updateBudget(month, request, currentUser));
     }
 
     @DeleteMapping("/{month}")
@@ -47,4 +57,3 @@ public class BudgetController {
     }
 
 }
-
