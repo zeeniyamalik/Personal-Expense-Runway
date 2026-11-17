@@ -79,10 +79,6 @@ Status key: [ ] not started
 
 ## 7. After the backend is done (before posting the project)
 
-- [ ] **Real email sending (SMTP).** Today `LoggingEmailSender` prints reset emails in the console, so only someone who can read the server log can reset a password.
-  - Add `spring-boot-starter-mail`, write `SmtpEmailSender implements EmailSender` using `JavaMailSender`, and choose it with `app.mail.sender=smtp`.
-  - Put the SMTP host, username and password in `.env` (never committed), like `DB_PASSWORD`.
-  - Pick a sender: Gmail app password is fine for a personal project (daily limit, may land in spam); Resend, Brevo or SES are better for real use.
-  - Set `app.frontend-base-url` to the real site address.
-  - Test with a real inbox: link works, arrives (not spam), expires after 30 minutes.
-  - **If you decide not to do this:** add it to the README under a "Scope" section as a known limitation ("password reset emails are printed to the server log; no email provider is connected"). The README has no Scope section yet.
+- [x] **Real email sending (SMTP), code done.** `SmtpEmailSender` (Spring `JavaMailSender`), chosen with `MAIL_SENDER=smtp` in `.env`; without it the app keeps printing emails in the console. Settings come from `.env`: `MAIL_HOST` (default smtp.gmail.com), `MAIL_PORT` (587), `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM` (defaults to the username), `APP_BASE_URL` for the link (default http://localhost:8080). A failed send is logged, not shown to the user, so the answer never reveals which emails have accounts. Checked: the app connects to Gmail and logs "Authentication failed" with a fake password.
+  - [ ] **You:** put a real Gmail address and app password in `.env`, set `MAIL_SENDER=smtp`, restart, and test with a real inbox: email arrives (check spam), link works, expires after 30 minutes.
+  - [ ] **You, when the site is online:** set `APP_BASE_URL` to the real address.
